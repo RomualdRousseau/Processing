@@ -327,6 +327,13 @@ class Friend extends Entity {
   public void render() {
     imageMode(CENTER);
     image(BONUS_SPRITE, this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+    
+    if (DEBUG) {
+      fill(255, 128);
+      strokeWeight(2);
+      stroke(0, 255, 0);
+      ellipse(this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+    }
   }
 }
 class Game_ {
@@ -503,15 +510,15 @@ class Game_ {
   
     if (this.state == GameState.INIT) {
       fadeScreen();
-      textSize(32);
-      centeredText("FLAPPY BIRD\n\nHIT SPACEBAR TO START");
+      continueText("HIT SPACEBAR TO START");
     } else if (this.state == GameState.GAMEOVER) {
       fadeScreen();
-      textSize(32);
-      centeredText("GAME OVER\n\nHIT SPACEBAR TO CONTINUE");
+      centeredText("GAME OVER");
+      continueText("HIT SPACEBAR TO START");
+    } else if (this.state == GameState.GAMEWIN) {
+      continueText("HIT SPACEBAR TO START");
     }
     
-    textSize(32);
     scoreText(String.format("%d", this.score));
   }
   
@@ -616,7 +623,6 @@ static final float G = -9.81f;
 static final float DRAG_COEF = 10;
 static final float MUTATION_RATE = 0.1f;
 static final float MUTATION_VARIANCE = 0.1f;
-static final int POOL_SAMPLE = 5;
 static final int SIMULATION_STEPS = 10;
 static final int BIRDS_COUNT = 100;
 static final float BIRD_MASS = 100;
@@ -1404,7 +1410,7 @@ Resources_ Resources = new Resources_();
 class Trophee extends Entity {
   Trophee() {
     super();
-    this.position = new PVector(width / 2, height /2);
+    this.position = new PVector(width / 2, height / 2);
     this.velocity = new PVector(0.0f, 0.0f);
     this.acceleration = new PVector(0.0f, 0.0f);
   }
@@ -1413,7 +1419,7 @@ class Trophee extends Entity {
     fill(255);
     textSize(32);
     textAlign(CENTER, CENTER);
-    text("HAPPY VALENTINE\nMY BABY", width / 2, 200);
+    text("HAPPY VALENTINE\n\nMY BABY", width / 2, height / 2 - TROPHEE_SIZE / 2 - 100) ;
     imageMode(CENTER);
     image(TROPHEE_SPRITE, this.position.x, mapToScreenY(this.position.y), TROPHEE_SIZE, TROPHEE_SIZE);
   }
@@ -1628,12 +1634,21 @@ public void fadeScreen() {
 }
 
 public void centeredText(String s) {
+  textSize(32);
   fill(255);
   textAlign(CENTER, CENTER);
-  text(s, width / 2, height /2);
+  text(s, width / 2, height / 2);
+}
+
+public void continueText(String s) {
+  textSize(32);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  text(s, width / 2, height - 40);
 }
 
 public void scoreText(String s) {
+  textSize(32);
   fill(255);
   textAlign(RIGHT, TOP);
   text(s, width - 10, 10);

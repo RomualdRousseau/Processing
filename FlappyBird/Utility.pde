@@ -33,12 +33,21 @@ void fadeScreen() {
 }
 
 void centeredText(String s) {
+  textSize(32);
   fill(255);
   textAlign(CENTER, CENTER);
-  text(s, width / 2, height /2);
+  text(s, width / 2, height / 2);
+}
+
+void continueText(String s) {
+  textSize(32);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  text(s, width / 2, height - 40);
 }
 
 void scoreText(String s) {
+  textSize(32);
   fill(255);
   textAlign(RIGHT, TOP);
   text(s, width - 10, 10);

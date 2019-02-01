@@ -172,15 +172,15 @@ class Game_ {
   
     if (this.state == GameState.INIT) {
       fadeScreen();
-      textSize(32);
-      centeredText("FLAPPY BIRD\n\nHIT SPACEBAR TO START");
+      continueText("HIT SPACEBAR TO START");
     } else if (this.state == GameState.GAMEOVER) {
       fadeScreen();
-      textSize(32);
-      centeredText("GAME OVER\n\nHIT SPACEBAR TO CONTINUE");
+      centeredText("GAME OVER");
+      continueText("HIT SPACEBAR TO START");
+    } else if (this.state == GameState.GAMEWIN) {
+      continueText("HIT SPACEBAR TO START");
     }
     
-    textSize(32);
     scoreText(String.format("%d", this.score));
   }
   

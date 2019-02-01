@@ -28,5 +28,12 @@ class Friend extends Entity {
   void render() {
     imageMode(CENTER);
     image(BONUS_SPRITE, this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+    
+    if (DEBUG) {
+      fill(255, 128);
+      strokeWeight(2);
+      stroke(0, 255, 0);
+      ellipse(this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+    }
   }
 }

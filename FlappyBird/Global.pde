@@ -22,7 +22,6 @@ static final float G = -9.81;
 static final float DRAG_COEF = 10;
 static final float MUTATION_RATE = 0.1;
 static final float MUTATION_VARIANCE = 0.1;
-static final int POOL_SAMPLE = 5;
 static final int SIMULATION_STEPS = 10;
 static final int BIRDS_COUNT = 100;
 static final float BIRD_MASS = 100;
