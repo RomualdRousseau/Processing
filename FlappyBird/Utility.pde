@@ -1,6 +1,10 @@
+String getDataPath(String path) {
+  return dataPath(path);
+}
+
 boolean isSpaceBarPressed(GameMode mode_) {
   if (mode_ == GameMode.ALL || mode == mode_) {
-    if (keyPressed && key == ' ') {
+    if (mousePressed || keyPressed && key == ' ') {
       delay(200); // Avoid Debounce; crude but it works
       return true;
     } else {
@@ -12,43 +16,55 @@ boolean isSpaceBarPressed(GameMode mode_) {
 }
 
 boolean fileExistsInData(String fileName) {
-  return new File(dataPath(fileName)).exists();
+  return new File(getDataPath(fileName)).exists();
 }
 
 void deleteFileInData(String fileName) {
-  File file = new File(dataPath(fileName));
+  File file = new File(getDataPath(fileName));
   if(file.exists()) { 
     file.delete();
   }
 }
 
+float mapToScreenX(float x) {
+  return map(x, 0, WIDTH, 0, width);
+}
+
 float mapToScreenY(float y) {
-  return map(y, height, 0, 0, height);
+  return map(y, HEIGHT, 0, 0, height);
+}
+
+float scaleToScreenX(float x) {
+  return map(x, 0, WIDTH, 0, width);
+}
+
+float scaleToScreenY(float y) {
+  return map(y, 0, HEIGHT, 0, height);
 }
 
 void fadeScreen() {
   noStroke();
   fill(0, 128);
-  rect(0, 0, width, height);
+  rect(mapToScreenX(0), mapToScreenY(HEIGHT), scaleToScreenX(WIDTH), scaleToScreenY(HEIGHT));
 }
 
 void centeredText(String s) {
-  textSize(32);
+  textSize(scaleToScreenY(32));
   fill(255);
   textAlign(CENTER, CENTER);
-  text(s, width / 2, height / 2);
+  text(s, mapToScreenX(WIDTH / 2), mapToScreenY(HEIGHT / 2));
 }
 
 void continueText(String s) {
-  textSize(32);
+  textSize(scaleToScreenY(32));
   fill(255);
   textAlign(CENTER, CENTER);
-  text(s, width / 2, height - 40);
+  text(s, mapToScreenX(WIDTH / 2), mapToScreenY(40));
 }
 
 void scoreText(String s) {
-  textSize(32);
+  textSize(scaleToScreenY(32));
   fill(255);
   textAlign(RIGHT, TOP);
-  text(s, width - 10, 10);
+  text(s, mapToScreenX(WIDTH - 10), mapToScreenY(HEIGHT - 10));
 }

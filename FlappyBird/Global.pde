@@ -17,12 +17,14 @@ enum GameMode {
 };
 
 static final boolean DEBUG = false;
-static final int MAX_SCORE = 214;
+static final float WIDTH = 800;
+static final float HEIGHT = 800;
+static final int MAX_SCORE = 999;
 static final float G = -9.81;
 static final float DRAG_COEF = 10;
 static final float MUTATION_RATE = 0.1;
 static final float MUTATION_VARIANCE = 0.1;
-static final int SIMULATION_STEPS = 10;
+static final int SIMULATION_STEPS = 10; // calibrate to speed machine
 static final int BIRDS_COUNT = 100;
 static final float BIRD_MASS = 100;
 static final float BIRD_FLY_FORCE = 6000;
@@ -47,7 +49,7 @@ static SoundFile POINT_SOUND;
 static SoundFile CRASH_SOUND;
 
 static GameMode mode = GameMode.DEMO;
-static float frameTime = 0.016668; // 1.0 / frameRate if frameRate = 60 fps
+static float frameTime = 0.016668; // 1.0 / 60 fps
 static int cycles = 1;
 static boolean audioEnabled = true;
 

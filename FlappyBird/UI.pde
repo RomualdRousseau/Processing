@@ -8,30 +8,30 @@ class UI_
 
   void pack() {
     slider.x = 10;
-    slider.y = height - 10;
-    slider.size = width - 20;
+    slider.y = 10;
+    slider.size = WIDTH - 20;
     
     buttonSwitchMode.x = 10;
-    buttonSwitchMode.y = height - 50;
+    buttonSwitchMode.y = 50;
     buttonSwitchMode.size = 100;
     
     buttonResetTraining.x = 120;
-    buttonResetTraining.y = height - 50;
+    buttonResetTraining.y = 50;
     buttonResetTraining.size = 100;
     
     buttonSaveTheBest.x = 230;
-    buttonSaveTheBest.y = height - 50;
+    buttonSaveTheBest.y = 50;
     buttonSaveTheBest.size = 100;
     
     buttonSwitchAudio.x = 340;
-    buttonSwitchAudio.y = height - 50;
+    buttonSwitchAudio.y = 50;
     buttonSwitchAudio.size = 100;
   }
   
   void render() {
     noStroke();
     fill(0, 64);
-    rect(0, height - 80, width, 80);
+    rect(mapToScreenX(0), mapToScreenY(80), scaleToScreenX(WIDTH), scaleToScreenY(80));
     
     slider.render();
     buttonSwitchMode.render();
@@ -75,7 +75,7 @@ class UI_
     if (buttonSaveTheBest.clicked) {
       Genetic.calculateFitness();
       Genetic.samplePool(1);
-      saveJSONObject(birds.get(0).brain.toJSON(), dataPath("melody.json"));
+      saveJSONObject(birds.get(0).brain.toJSON(), getDataPath("melody.json"));
     }
     
     buttonSwitchAudio.update();
@@ -113,7 +113,7 @@ class Button {
     if(this.enableMode != GameMode.ALL && this.enableMode != mode) {
       return;
     }
-    if (mouseX >= this.x && mouseX <= this.x + this.size && mouseY >= this.y - 30 && mouseY <= this.y + 30) {
+    if (mouseX >= mapToScreenX(this.x) && mouseX <= mapToScreenX(this.x + this.size) && mouseY >= mapToScreenY(this.y + 30) && mouseY <= mapToScreenY(this.y - 30)) {
       this.clicked = true;
     }
     else {
@@ -124,7 +124,7 @@ class Button {
   void render() {
     fill(0, 128);
     noStroke();
-    rect(x, y, size, 30, 3);
+    rect(mapToScreenX(this.x), mapToScreenY(this.y), scaleToScreenX(this.size), scaleToScreenY(30), 3);
     
     if(this.enableMode == GameMode.ALL || this.enableMode == mode) {
       fill(255);
@@ -133,8 +133,8 @@ class Button {
       fill(128);
     }
     textAlign(CENTER, CENTER);
-    textSize(16);
-    text(this.text, this.x + this.size / 2, this.y + 30 / 2);
+    textSize(scaleToScreenY(16));
+    text(this.text, mapToScreenX(this.x + this.size / 2), mapToScreenY(this.y - 30 / 2));
   }
 }
 
@@ -154,15 +154,15 @@ class Slider {
     if(this.enableMode != GameMode.ALL && this.enableMode != mode) {
       return;
     }
-    if (mouseX >= this.x && mouseX <= this.x + this.size && mouseY >= this.y - 5 && mouseY <= this.y + 10) {
-      this.value = map(mouseX, this.x, this.x + this.size, 0.0, 1.0);
+    if (mouseX >= mapToScreenX(this.x) && mouseX <= mapToScreenX(this.x + this.size) && mouseY >= mapToScreenY(this.y + 5) && mouseY <= mapToScreenY(this.y - 10)) {
+      this.value = map(mouseX, mapToScreenX(this.x), mapToScreenX(this.x + this.size), 0.0, 1.0);
     }
   }
   
   void render() {
     noStroke();
     fill(0, 128);
-    rect(this.x, this.y, this.size, 5, 3);
+    rect(mapToScreenX(this.x), mapToScreenY(this.y), scaleToScreenX(this.size), scaleToScreenY(5), 3);
     
     if(this.enableMode == GameMode.ALL || this.enableMode == mode) {
       fill(255);
@@ -170,6 +170,6 @@ class Slider {
     else {
       fill(128);
     }
-    rect(this.x, this.y, this.size * this.value, 5, 3);
+    rect(mapToScreenX(this.x), mapToScreenY(this.y), scaleToScreenX(this.size * this.value), scaleToScreenY(5), 3);
   }
 }

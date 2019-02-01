@@ -6,13 +6,13 @@ class Landscape {
   /* A bit crude parallax scrolling implementation
    */
   public Landscape() {
-    this.x = new float[ceil(width / CITY_SIZE) + 1];
-    this.y = new float[ceil(width / CITY_SIZE) + 1];
-    this.v = new float[ceil(width / CITY_SIZE) + 1];
+    this.x = new float[ceil(WIDTH / CITY_SIZE) + 1];
+    this.y = new float[ceil(WIDTH / CITY_SIZE) + 1];
+    this.v = new float[ceil(WIDTH / CITY_SIZE) + 1];
 
     for (int i = 0; i < x.length; i++) {
       this.x[i] = i * CITY_SIZE;
-      this.y[i] = height - CITY_SIZE;
+      this.y[i] = CITY_SIZE;
       this.v[i] = CITY_SCROLLING_SPEED;
     }
   }
@@ -27,7 +27,7 @@ class Landscape {
     for (int i = 0; i < x.length; i++) {
       this.x[i] += this.v[i] * frameTime;
       if (this.x[i] < -CITY_SIZE) {
-        this.x[i] = width;
+        this.x[i] = WIDTH;
       }
     }
   }
@@ -36,7 +36,7 @@ class Landscape {
     background(0, 128, 255);
     imageMode(CORNER);
     for (int i = 0; i < x.length; i++) {
-      image(CITY_SPRITE, this.x[i], this.y[i], CITY_SIZE + 1, CITY_SIZE); // CITY_SIZE + 1 trick ensures seamless tiles 
+      image(CITY_SPRITE, mapToScreenX(this.x[i]), mapToScreenY(this.y[i]), scaleToScreenX(CITY_SIZE + 1), scaleToScreenY(CITY_SIZE)); // CITY_SIZE + 1 trick ensures seamless tiles 
     }
   }
 }

@@ -1,7 +1,7 @@
 class Friend extends Entity {
   Friend() {
     super();
-    this.position = new PVector(3 * width / 4, height / 2);
+    this.position = new PVector(3 * WIDTH / 4, HEIGHT / 2);
     this.velocity = new PVector(0.0, 0.0);
     this.acceleration = new PVector(0.0, 0.0);
   }
@@ -22,18 +22,18 @@ class Friend extends Entity {
   }
   
   void constrainToScreen() {
-    this.position.y = constrain(this.position.y, FRIEND_MASS / 2, height - FRIEND_MASS / 2);
+    this.position.y = constrain(this.position.y, FRIEND_MASS / 2, HEIGHT - FRIEND_MASS / 2);
   }
   
   void render() {
     imageMode(CENTER);
-    image(BONUS_SPRITE, this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+    image(BONUS_SPRITE, mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(FRIEND_MASS), scaleToScreenY(FRIEND_MASS));
     
     if (DEBUG) {
       fill(255, 128);
       strokeWeight(2);
       stroke(0, 255, 0);
-      ellipse(this.position.x, mapToScreenY(this.position.y), FRIEND_MASS, FRIEND_MASS);
+      ellipse(mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(FRIEND_MASS), scaleToScreenY(FRIEND_MASS));
     }
   }
 }

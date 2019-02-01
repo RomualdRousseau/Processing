@@ -27,9 +27,7 @@
  * Processing 3+ with Sound library
  */
 void setup() {
-  frameTime = 1.0 / frameRate; // Time calibration constant for the physic calculation
-
-  size(600, 800, P2D);
+  size(800, 800, P2D);
   smooth();
   Resources.loadAll(this);
   UI.pack();
@@ -39,15 +37,19 @@ void setup() {
 void draw() {
   Game.mainloop();
   Game.render();
-  if(mouseY > height - 80) {
+  if(mouseY > mapToScreenY(80)) {
     UI.render();
   }
 }
 
 void mouseReleased() {
-  UI.mouseReleased();
+  if(mouseY > mapToScreenY(80)) {
+    UI.mouseReleased();
+  }
 }
 
 void mouseDragged() {
-  UI.mouseDragged();
+  if(mouseY > mapToScreenY(80)) {
+    UI.mouseDragged();
+  }
 }

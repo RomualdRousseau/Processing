@@ -1,7 +1,7 @@
 class Trophee extends Entity {
   Trophee() {
     super();
-    this.position = new PVector(width / 2, height / 2);
+    this.position = new PVector(WIDTH / 2, HEIGHT / 2);
     this.velocity = new PVector(0.0, 0.0);
     this.acceleration = new PVector(0.0, 0.0);
   }
@@ -10,8 +10,8 @@ class Trophee extends Entity {
     fill(255);
     textSize(32);
     textAlign(CENTER, CENTER);
-    text("HAPPY VALENTINE\n\nMY BABY", width / 2, height / 2 - TROPHEE_SIZE / 2 - 100) ;
+    text("HAPPY VALENTINE\n\nMY BABY", mapToScreenX(WIDTH / 2), mapToScreenY(HEIGHT / 2 + TROPHEE_SIZE / 2 + 100)) ;
     imageMode(CENTER);
-    image(TROPHEE_SPRITE, this.position.x, mapToScreenY(this.position.y), TROPHEE_SIZE, TROPHEE_SIZE);
+    image(TROPHEE_SPRITE, mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(TROPHEE_SIZE), scaleToScreenY(TROPHEE_SIZE));
   }
 }

@@ -18,6 +18,8 @@ class Genetic_ {
   }
   
   void samplePool(int sampleCount) {
+    sampleCount = max(1, sampleCount);
+    
     Collections.sort(this.pool, Collections.reverseOrder(new Comparator<Bird>() {
       public int compare(Bird a, Bird b) {
         float d = a.brain.fitness - b.brain.fitness;

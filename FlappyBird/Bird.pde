@@ -19,7 +19,7 @@ class Bird extends Entity {
     /* shuffle */    true,
     /* optimizer */  new OptimizerGenetic(MUTATION_VARIANCE, MUTATION_RATE));
 
-    this.position = new PVector(width / 4, floor(random(BIRD_MASS, height - BIRD_MASS)));
+    this.position = new PVector(WIDTH / 4, floor(random(BIRD_MASS, HEIGHT - BIRD_MASS)));
     this.velocity = new PVector(0, 0);
     this.acceleration = new PVector(0, 0);
   }
@@ -34,7 +34,7 @@ class Bird extends Entity {
     /* shuffle */    false,
     /* optimizer */  new OptimizerGenetic(MUTATION_VARIANCE, MUTATION_RATE));
 
-    this.position = new PVector(width / 4, floor(random(BIRD_MASS, height - BIRD_MASS)));
+    this.position = new PVector(WIDTH / 4, floor(random(BIRD_MASS, HEIGHT - BIRD_MASS)));
     this.velocity = new PVector(0, 0);
     this.acceleration = new PVector(0, 0);
   }
@@ -45,7 +45,7 @@ class Bird extends Entity {
     this.brain = parent.brain.clone();
     this.brain.mutate();
 
-    this.position = new PVector(width / 4, floor(random(BIRD_MASS, height - BIRD_MASS)));
+    this.position = new PVector(WIDTH / 4, floor(random(BIRD_MASS, HEIGHT - BIRD_MASS)));
     this.velocity = new PVector(0, 0);
     this.acceleration = new PVector(0, 0);
   }
@@ -77,7 +77,7 @@ class Bird extends Entity {
 
   boolean think() {
     if (mode == GameMode.INTERACTIVE) {
-      return keyPressed && key == ' ';
+      return mousePressed || keyPressed && key == ' ';
     }
       
     Pillar closest = this.lookat();
@@ -86,11 +86,11 @@ class Bird extends Entity {
     }
     
     Matrix input = new Matrix(new float[] {
-      this.position.y / height, 
+      this.position.y / HEIGHT, 
       this.velocity.y / BIRD_MAX_SPEED, 
-      (closest.top.x - this.position.x) / width, 
-      (closest.top.y - this.position.y) / height, 
-      (closest.bottom.y - this.position.y) / height
+      (closest.top.x - this.position.x) / WIDTH, 
+      (closest.top.y - this.position.y) / HEIGHT, 
+      (closest.bottom.y - this.position.y) / HEIGHT
       });
     Matrix output = this.brain.predict(input);
     
@@ -117,7 +117,7 @@ class Bird extends Entity {
   }
 
   void limit() {
-    if (this.position.y >= height - BIRD_MASS / 2) {
+    if (this.position.y >= HEIGHT - BIRD_MASS / 2) {
       PVector force = new PVector(0, -this.velocity.mag() * 0.5);
       this.acceleration.mult(0.0).add(force);
     }
@@ -125,7 +125,7 @@ class Bird extends Entity {
   
   void constrainToScreen() {
     this.velocity.y = constrain(this.velocity.y, -BIRD_MAX_SPEED, BIRD_MAX_SPEED);
-    this.position.y = constrain(this.position.y, BIRD_MASS / 2, height - BIRD_MASS / 2);
+    this.position.y = constrain(this.position.y, BIRD_MASS / 2, HEIGHT - BIRD_MASS / 2);
   }
   
   Pillar lookat() {
@@ -157,24 +157,24 @@ class Bird extends Entity {
   void render() {
     imageMode(CENTER);
     pushMatrix();
-    translate(this.position.x, mapToScreenY(this.position.y));
+    translate(mapToScreenX(this.position.x), mapToScreenY(this.position.y));
     rotate(-constrain(this.velocity.heading(), radians(0), radians(45)));
-    image(BIRD_SPRITE, 0, 0, BIRD_MASS, BIRD_MASS);
+    image(BIRD_SPRITE, 0, 0, scaleToScreenX(BIRD_MASS), scaleToScreenY(BIRD_MASS));
     popMatrix();
     
     if (!this.alive) {
       int frame = floor(frameCount * frameRate / 500.0) % 4;
       if (frame == 0) {
-        image(STAR_SPRITE, this.position.x + 32, mapToScreenY(this.position.y + 32), 32, 32);
+        image(STAR_SPRITE, mapToScreenX(this.position.x + 32), mapToScreenY(this.position.y + 32), scaleToScreenX(32), scaleToScreenY(32));
       }
       if (frame == 1) {
-        image(STAR_SPRITE, this.position.x + 16, mapToScreenY(this.position.y - 16), 48, 48);
+        image(STAR_SPRITE, mapToScreenX(this.position.x + 16), mapToScreenY(this.position.y - 16), scaleToScreenX(48), scaleToScreenY(48));
       }
       if (frame == 2) {
-        image(STAR_SPRITE, this.position.x - 16, mapToScreenY(this.position.y - 16), 64, 64);
+        image(STAR_SPRITE, mapToScreenX(this.position.x - 16), mapToScreenY(this.position.y - 16), scaleToScreenX(64), scaleToScreenY(64));
       }
       if (frame == 3) {
-        image(STAR_SPRITE, this.position.x - 32, mapToScreenY(this.position.y + 32), 48, 48);
+        image(STAR_SPRITE, mapToScreenX(this.position.x - 32), mapToScreenY(this.position.y + 32), scaleToScreenX(48), scaleToScreenY(48));
       }
     } else {
       for (int i = 0; i < smoke.size(); i++) {
@@ -187,9 +187,9 @@ class Bird extends Entity {
       fill(255, 128);
       strokeWeight(2);
       stroke(255, 0, 0);
-      ellipse(this.position.x, mapToScreenY(this.position.y), BIRD_MASS / 2, BIRD_MASS / 2);
+      ellipse(mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(BIRD_MASS / 2), scaleToScreenY(BIRD_MASS / 2));
       stroke(0, 255, 0);
-      ellipse(this.position.x, mapToScreenY(this.position.y), BIRD_MASS, BIRD_MASS);
+      ellipse(mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(BIRD_MASS), scaleToScreenY(BIRD_MASS));
     }
   }
 }
