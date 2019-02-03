@@ -9,7 +9,7 @@ class Game_ {
     this.state = GameState.INIT;
     this.score = 0;
     this.frameCounter = 0;
-    this.pillarInterval = floor(PILLAR_INTERVAL / (3.0 * frameTime));
+    this.pillarInterval = floor(PILLAR_INTERVAL / (3.0 * SIMULATION_TIME));
     this.pillarCount = 0;
     
     landscape = new Landscape();
@@ -46,7 +46,7 @@ class Game_ {
   }
   
   void mainloop() {
-    for (int i = 0; i < cycles * SIMULATION_STEPS; i++) {
+    for (int i = 0; i < cycles * simulationSteps; i++) {
       this.runOnce();
     }
   }
@@ -63,9 +63,8 @@ class Game_ {
   
     case MAINLOOP:
       if(this.score >= MAX_SCORE) {
-        landscape.stop();
-        pillars = new ArrayList<Pillar>();
         trophee = new Trophee();
+        UI.show = false;
         this.state = GameState.GAMEWIN;
       } else {
         this.spawnNewPillar();
@@ -124,8 +123,8 @@ class Game_ {
       
       for (int i = birds.size() - 1; i >= 0; i--) {
         Bird bird = birds.get(i);
-        bird.gravity();
         bird.limit();
+        bird.gravity();
         bird.update();
         bird.constrainToScreen();
       }
@@ -136,6 +135,15 @@ class Game_ {
         this.startup(false);
       }
       
+      for (int i = pillars.size() - 1; i >= 0; i--) {
+        Pillar pillar = pillars.get(i);
+        pillar.update();
+        if (pillar.isOffscreen()) {
+          pillars.remove(pillar);
+          landscape.stop();
+        }
+      }
+
       friend.meet(trophee);
       friend.update();
       friend.constrainToScreen();
@@ -171,17 +179,17 @@ class Game_ {
     }
   
     if (this.state == GameState.INIT) {
-      fadeScreen();
-      continueText("HIT SPACEBAR TO START");
+      UI.fadeScreen();
+      UI.continueText(ANDROID ? "TOUCH TO START" : "HIT SPACEBAR TO START");
     } else if (this.state == GameState.GAMEOVER) {
-      fadeScreen();
-      centeredText("GAME OVER");
-      continueText("HIT SPACEBAR TO START");
+      UI.fadeScreen();
+      UI.centeredText("GAME OVER");
+      UI.continueText(ANDROID ? "TOUCH TO START" : "HIT SPACEBAR TO START");
     } else if (this.state == GameState.GAMEWIN) {
-      continueText("HIT SPACEBAR TO START");
+      UI.continueText(ANDROID ? "TOUCH TO START" : "HIT SPACEBAR TO START");
     }
     
-    scoreText(String.format("%d", this.score));
+    UI.scoreText(String.format("%d", this.score));
   }
   
   void spawnNewPillar() {

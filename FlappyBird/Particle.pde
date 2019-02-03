@@ -9,6 +9,6 @@ class Particle extends Entity {
   void render() {
     fill(255, 192);
     noStroke();
-    ellipse(mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(20), scaleToScreenY(20));
+    ellipse(mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenXY(20), scaleToScreenY(20));
   }
 }

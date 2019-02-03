@@ -11,12 +11,13 @@
  *  - Maximum scoe is 214... Valentine Day ;)
  *
  * Enhancements:
- *  - Relative features extraction as the NN input => independance to the resolution
- *  - Tanh and linear activation functions for the NN
- *  - Added a bonus to the genetic fitness if the bird flies arounf the center of the pillars
+ *  - Relative features extraction as the NN input
+ *  - Tanh and softmax activation functions for the NN
+ *  - Added a bonus to the genetic fitness if the bird flies around the center of the pillars
+ *  - Physic engine independant of the screen resolution
  *  - Added mass and time integral in the physic equations
  *  - Playable option
- *  - Added different behaviors to tell a story of my baby and cute GFX ;)
+ *  - Added different behaviors to tell a story of my wifey and cute GFX ;)
  *
  * Disclaimer and fair use:
  * I don't own any rights for the usage of Melody and Cinamon characters. As such this images are not for redistribution.
@@ -26,8 +27,24 @@
  * Date: 2019-01-31
  * Processing 3+ with Sound library
  */
+
+void settings() {
+  if (!ANDROID) {
+    size(600, 800, P2D);
+  }
+}
+
 void setup() {
-  size(800, 800, P2D);
+  if(ANDROID) {
+    requestAllPermissions();
+    ensureDataPathExist();
+    orientation(PORTRAIT);
+    simulationSteps = floor(600 / 30); // 30 is the frame rate
+    frameRate(30);
+  }
+  else {
+    simulationSteps = floor(600 / frameRate);  
+  }
   smooth();
   Resources.loadAll(this);
   UI.pack();
@@ -37,19 +54,37 @@ void setup() {
 void draw() {
   Game.mainloop();
   Game.render();
-  if(mouseY > mapToScreenY(80)) {
-    UI.render();
-  }
+  UI.render();
 }
 
 void mouseReleased() {
-  if(mouseY > mapToScreenY(80)) {
-    UI.mouseReleased();
+  if (mouseY > mapToScreenY(80)) {
+    if(UI.show) {
+      UI.mouseReleased();  
+    } else {
+      UI.show = true;
+    }
+  } else {
+    UI.show = false;
   }
 }
 
 void mouseDragged() {
-  if(mouseY > mapToScreenY(80)) {
-    UI.mouseDragged();
+  if (mouseY > mapToScreenY(80)) {
+    if(UI.show) {
+      UI.mouseDragged();  
+    } else {
+      UI.show = true;
+    }
+  } else {
+    UI.show = false;
+  }
+}
+
+void mouseMoved() {
+  if (mouseY > mapToScreenY(80)) {
+    UI.show = true;
+  } else {
+    UI.show = false;
   }
 }

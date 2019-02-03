@@ -1,3 +1,7 @@
+interface MatrixFunction<T, R> {
+  R apply(T v, int row, int col, Matrix matrix);
+}
+
 class Matrix {
   int rows;
   int cols;
@@ -7,7 +11,17 @@ class Matrix {
     this.rows = rows;
     this.cols = cols;
     this.data = new float[this.rows][this.cols];
-    this.reset();
+  }
+
+  public Matrix(int rows, int cols, float v) {
+    this.rows = rows;
+    this.cols = cols;
+    this.data = new float[this.rows][this.cols];
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] = v;
+      }
+    }
   }
 
   public Matrix(float[] v) {
@@ -18,7 +32,7 @@ class Matrix {
       this.data[i][0] = v[i];
     }
   }
-  
+
   public Matrix(JSONObject json) {
     this.rows = json.getInt("rows");
     this.cols = json.getInt("cols");
@@ -32,12 +46,31 @@ class Matrix {
     }
   }
 
-  public void reset() {
+  public Matrix zero() {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
         this.data[i][j] = 0.0;
       }
     }
+    return this;
+  }
+
+  public Matrix ones() {
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] = 1.0;
+      }
+    }
+    return this;
+  }
+
+  public Matrix identity() {
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] = (i == j) ? 1.0 : 0.0;
+      }
+    }
+    return this;
   }
 
   public Matrix mutate(float rate, float variance) {
@@ -113,13 +146,34 @@ class Matrix {
     return this;
   }
 
-  public Matrix map(Function<Float, Float> fn) {
+  public Matrix div(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] /= n;
+      }
+    }
+    return this;
+  }
+
+  public Matrix div(Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cols of A must match rows of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] /= m.data[i][j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix map(MatrixFunction<Float, Float> fn) {
     if (fn == null) {
       throw new IllegalArgumentException("function is not defined");
     }
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = fn.apply(this.data[i][j]);
+        this.data[i][j] = fn.apply(this.data[i][j], i, j, this);
       }
     }
     return this;
@@ -161,7 +215,7 @@ class Matrix {
     }
     return result;
   }
-  
+
   public JSONObject toJSON() {
     JSONArray jsonData = new JSONArray();
     for (int i = 0; i < this.rows; i++) {
@@ -178,9 +232,17 @@ class Matrix {
     return json;
   }
 
-  public void print() {
-    for (int i  = 0; i < this.rows; i++) {
-      println(this.data[i]);
+  public void print2() {
+    for (int i = 0; i < this.rows; i++) {
+      print("| ");
+      for (int j = 0; j < this.cols; j++) {
+        if (j == this.cols - 1) {
+          print(String.format("%.2f", this.data[i][j]));
+        } else {
+          print(String.format("%.2f\t", this.data[i][j]));
+        }
+      }
+      println(" |");
     }
   }
 }

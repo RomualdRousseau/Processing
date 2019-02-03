@@ -27,7 +27,7 @@ class Friend extends Entity {
   
   void render() {
     imageMode(CENTER);
-    image(BONUS_SPRITE, mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenX(FRIEND_MASS), scaleToScreenY(FRIEND_MASS));
+    image(BONUS_SPRITE, mapToScreenX(this.position.x), mapToScreenY(this.position.y), scaleToScreenXY(FRIEND_MASS), scaleToScreenY(FRIEND_MASS));
     
     if (DEBUG) {
       fill(255, 128);

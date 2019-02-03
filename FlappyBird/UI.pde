@@ -5,30 +5,64 @@ class UI_
   Button buttonResetTraining = new Button("Train", GameMode.DEMO);
   Button buttonSaveTheBest = new Button("Save", GameMode.DEMO);
   Button buttonSwitchAudio = new Button("Audio Off", GameMode.ALL);
-
+  boolean show = false;
+  
   void pack() {
     slider.x = 10;
     slider.y = 10;
     slider.size = WIDTH - 20;
     
+    float w = (WIDTH - 10) / 4;
+    
     buttonSwitchMode.x = 10;
     buttonSwitchMode.y = 50;
-    buttonSwitchMode.size = 100;
+    buttonSwitchMode.size = w - 10;
     
-    buttonResetTraining.x = 120;
+    buttonResetTraining.x = 10 + w;
     buttonResetTraining.y = 50;
-    buttonResetTraining.size = 100;
+    buttonResetTraining.size = w - 10;
     
-    buttonSaveTheBest.x = 230;
+    buttonSaveTheBest.x = 10 + w * 2;
     buttonSaveTheBest.y = 50;
-    buttonSaveTheBest.size = 100;
+    buttonSaveTheBest.size = w - 10;
     
-    buttonSwitchAudio.x = 340;
+    buttonSwitchAudio.x = 10 + w * 3;
     buttonSwitchAudio.y = 50;
-    buttonSwitchAudio.size = 100;
+    buttonSwitchAudio.size = w - 10;
+  }
+  
+  void fadeScreen() {
+    noStroke();
+    fill(0, 128);
+    rect(mapToScreenX(0), mapToScreenY(HEIGHT), scaleToScreenX(WIDTH), scaleToScreenY(HEIGHT));
+  }
+  
+  void centeredText(String s) {
+    textSize(scaleToScreenX(32));
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text(s, mapToScreenX(WIDTH / 2), mapToScreenY(HEIGHT / 2));
+  }
+  
+  void continueText(String s) {
+    textSize(scaleToScreenX(24));
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text(s, mapToScreenX(WIDTH / 2), mapToScreenY(40));
+  }
+  
+  void scoreText(String s) {
+    textSize(scaleToScreenX(32));
+    fill(255);
+    textAlign(RIGHT, TOP);
+    text(s, mapToScreenX(WIDTH - 10), mapToScreenY(HEIGHT - 10));
   }
   
   void render() {
+    if(!this.show) {
+      return;
+    }
+    
     noStroke();
     fill(0, 64);
     rect(mapToScreenX(0), mapToScreenY(80), scaleToScreenX(WIDTH), scaleToScreenY(80));
@@ -49,6 +83,7 @@ class UI_
         mode = GameMode.DEMO;
         cycles = 1;
         slider.value = 0;
+        UI.show = false;
         Game.startup(true);
         break;
     
@@ -57,6 +92,7 @@ class UI_
         mode = GameMode.INTERACTIVE;
         cycles = 1;
         slider.value = 0;
+        UI.show = false;
         Game.startup(true);
         break;
         
@@ -133,7 +169,7 @@ class Button {
       fill(128);
     }
     textAlign(CENTER, CENTER);
-    textSize(scaleToScreenY(16));
+    textSize(scaleToScreenX(14));
     text(this.text, mapToScreenX(this.x + this.size / 2), mapToScreenY(this.y - 30 / 2));
   }
 }
@@ -171,5 +207,29 @@ class Slider {
       fill(128);
     }
     rect(mapToScreenX(this.x), mapToScreenY(this.y), scaleToScreenX(this.size * this.value), scaleToScreenY(5), 3);
+  }
+}
+
+float mapToScreenX(float x) {
+  return map(x, 0, WIDTH, 0, width);
+}
+
+float mapToScreenY(float y) {
+  return map(y, HEIGHT, 0, 0, height);
+}
+
+float scaleToScreenX(float x) {
+  return map(x, 0, WIDTH, 0, width);
+}
+
+float scaleToScreenY(float y) {
+  return map(y, 0, HEIGHT, 0, height);
+}
+
+float scaleToScreenXY(float y) {
+  if(width <= height / 2) {
+    return scaleToScreenX(y);
+  } else {
+    return scaleToScreenY(y);
   }
 }

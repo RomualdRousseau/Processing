@@ -23,7 +23,7 @@ class Pillar {
   }
 
   void update() {
-    this.bottom.x += PILLAR_SCROLLING_SPEED * frameTime;
+    this.bottom.x += PILLAR_SCROLLING_SPEED * SIMULATION_TIME;
     this.top.x = this.bottom.x;
   }
 

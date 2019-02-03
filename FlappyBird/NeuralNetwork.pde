@@ -107,7 +107,7 @@ class SequentialNeuralNetwork extends NeuralNetwork {
     Matrix loss = this.loss.apply(output, target);
     this.optimizer.optimize(this.layer2, hidden, output, loss);
 
-    loss = this.layer2.feedBackLoss(loss);
+    loss = this.layer2.propagateError(loss);
     this.optimizer.optimize(this.layer1, input, hidden, loss);
   }
 }
@@ -218,7 +218,7 @@ class Layer {
 
   public void reset() {
     this.weights.randomize(this.weights.rows);
-    this.gradients.reset();
+    this.gradients.zero();
     this.bias.randomize(this.bias.rows);
   }
 
@@ -227,10 +227,10 @@ class Layer {
   }
 
   public Matrix feedForward(Matrix input) {
-    return this.weights.transform(input).add(this.bias).map(this.activation.apply);
+    return this.activation.activate(this.weights.transform(input).add(this.bias));
   }
 
-  public Matrix feedBackLoss(Matrix loss) {
+  public Matrix propagateError(Matrix loss) {
     return this.weights.transpose().transform(loss);
   }
   
@@ -240,71 +240,6 @@ class Layer {
     json.setJSONObject("gradients", this.gradients.toJSON());
     json.setJSONObject("bias", this.bias.toJSON());
     return json;
-  }
-}
-
-abstract class ActivationFunction {
-  Function<Float, Float> apply;
-  Function<Float, Float> derivate;
-}
-
-class LinearActivationFunction extends ActivationFunction {
-  public LinearActivationFunction() {
-    this.apply = new Function<Float, Float>() {
-      public final Float apply(Float x) {
-        return x;
-      }
-    };
-    this.derivate = new Function<Float, Float>() {
-      public final Float apply(Float y) {
-        return 1.0;
-      }
-    };
-  }
-}
-
-class SigmoidActivationFunction extends ActivationFunction {
-  public SigmoidActivationFunction() {
-    this.apply = new Function<Float, Float>() {
-      public final Float apply(Float x) {
-        return 1.0 / (1.0 + exp(-x));
-      }
-    };
-    this.derivate = new Function<Float, Float>() {
-      public final Float apply(Float y) {
-        return y * (1.0 - y);
-      }
-    };
-  }
-}
-
-class TanhActivationFunction extends ActivationFunction {
-  public TanhActivationFunction() {
-    this.apply = new Function<Float, Float>() {
-      public final Float apply(Float x) {
-        return (exp(x) - exp(-x)) / (exp(x) + exp(-x));
-      }
-    };
-    this.derivate = new Function<Float, Float>() {
-      public final Float apply(Float y) {
-        return 1.0 - y * y;
-      }
-    };
-  }
-}
-
-class ReluActivationFunction extends ActivationFunction {
-  public ReluActivationFunction() {
-    this.apply = new Function<Float, Float>() {
-      public final Float apply(Float x) {
-        return max(0.0, x);
-      }
-    };
-    this.derivate = new Function<Float, Float>() {
-      public final Float apply(Float y) {
-        return (y <= 0.0) ? 0.0 : 1.0;
-      }
-    };
   }
 }
 
@@ -336,6 +271,156 @@ class ExponentialScheduler implements LearningRateScheduler {
   }
 }
 
+interface ActivationFunction {
+  Matrix activate(Matrix input);
+  Matrix derivate(Matrix output, Matrix error);
+}
+
+class LinearActivationFunction implements ActivationFunction {
+  Matrix activate(Matrix input) {
+    /*
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
+        return x;
+      }
+    };
+    
+    return input.map(fn);
+    */
+    return input;
+  }
+  
+  Matrix derivate(Matrix output, Matrix error) {
+    /*
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix matrix) {
+        return 1.0;
+      }
+    };
+    
+    Matrix m = output.copy();
+    
+    return m.map(fn).mult(error);
+    */
+    return error.copy();
+  }
+}
+
+class SigmoidActivationFunction implements ActivationFunction {
+  Matrix activate(Matrix input) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
+        return 1.0 / (1.0 + exp(-x));
+      }
+    };
+    
+    return input.map(fn);
+  }
+  
+  Matrix derivate(Matrix output, Matrix error) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix matrix) {
+        return y * (1.0 - y);
+      }
+    };
+    
+    Matrix m = output.copy();
+
+    return m.map(fn).mult(error);
+  }
+}
+
+class TanhActivationFunction implements ActivationFunction {
+  Matrix activate(Matrix input) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
+        float a = exp(x);
+        float b = exp(-x);
+        return (a - b) / (a + b);
+      }
+    };
+    return input.map(fn);
+  }
+  
+  Matrix derivate(Matrix output, Matrix error) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix matrix) {
+        return 1.0 - y * y;
+      }
+    };
+    
+    Matrix m = output.copy();
+
+    return m.map(fn).mult(error);
+  }
+}
+
+class ReluActivationFunction implements ActivationFunction {
+  Matrix activate(Matrix input) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
+        return max(0.0, x);
+      }
+    };
+    return input.map(fn);
+  }
+  
+  Matrix derivate(Matrix output, Matrix error) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix matrix) {
+        return (y <= 0.0) ? 0.0 : 1.0;
+      }
+    };
+    
+    Matrix m = output.copy();
+
+    return m.map(fn).mult(error);
+  }
+}
+
+class SoftmaxActivationFunction implements ActivationFunction {
+  Matrix activate(Matrix input) {
+    if(input.cols > 1) {
+      throw new IllegalArgumentException("Softmax must be used on the output layer");
+    }
+    
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
+        return exp(x);
+      }
+    };
+    
+    float sum = 0.0;
+    for(int k = 0; k < input.rows; k++) {
+      sum += exp(input.data[k][0]);
+    }
+
+    return input.map(fn).div(sum);
+  }
+  
+  Matrix derivate(Matrix output, Matrix error) {
+    if(output.cols > 1) {
+      throw new IllegalArgumentException("Softmax must be used on the output layer");
+    }
+    
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix matrix) {
+        return (row == col) ? y * (1 - y) : -y * matrix.data[col][col];
+      }
+    };
+    
+    // Matrix m = output.copy().ones().transform(output.transpose());
+    Matrix m = new Matrix(output.rows, output.rows);
+    for(int i = 0; i < m.rows; i++) {
+      for(int j = 0; j < m.cols; j++) {
+        m.data[i][j] = output.data[j][0]; 
+      }
+    }
+
+    return m.map(fn).transform(error);
+  }
+}
+
 interface LossFunction {
   Matrix apply(Matrix output, Matrix target);
 }
@@ -343,6 +428,12 @@ interface LossFunction {
 class MeanSquaredErrorFunction implements LossFunction {
   public Matrix apply(Matrix output, Matrix target) {
     return target.copy().sub(output);
+  }
+}
+
+class CrossEntropyFunction implements LossFunction {
+  public Matrix apply(Matrix output, Matrix target) {
+    return target.copy().mult(-1).div(output);
   }
 }
 
@@ -374,9 +465,9 @@ class OptimizerSgd extends Optimizer {
   public OptimizerSgd(float learningRate, float biasRate) {
     super(learningRate, biasRate);
   }
-
+  
   public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error).mult(this.learningRate);
+    Matrix gradient = layer.activation.derivate(output, error).mult(this.learningRate);
     Matrix delta = gradient.transform(input.transpose());
     layer.weights.add(delta);
     layer.bias.add(gradient.mult(this.biasRate));
@@ -397,7 +488,7 @@ class OptimizerMomentum extends Optimizer {
   }
 
   public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error).mult(this.learningRate);
+    Matrix gradient = layer.activation.derivate(output, error).mult(this.learningRate);
     layer.gradients.mult(this.momentum).add(gradient.mult(1.0 - this.momentum));
     Matrix delta = layer.gradients.transform(input.transpose());
     layer.weights.add(delta);
@@ -414,8 +505,8 @@ class OptimizerGenetic extends Optimizer {
   }
 
   public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    Function<Float, Float> mutationFunc = new Function<Float, Float>() {
-      public final Float apply(Float x) {
+    MatrixFunction<Float, Float> mutationFunc = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float x, int row, int col, Matrix matrix) {
         if (random(1.0) < mutationRate) {
           return x + randomGaussian() * learningRate;
         } else {

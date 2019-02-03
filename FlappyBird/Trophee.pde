@@ -8,7 +8,7 @@ class Trophee extends Entity {
   
   void render() {
     fill(255);
-    textSize(32);
+    textSize(scaleToScreenX(32));
     textAlign(CENTER, CENTER);
     text("HAPPY VALENTINE\n\nMY BABY", mapToScreenX(WIDTH / 2), mapToScreenY(HEIGHT / 2 + TROPHEE_SIZE / 2 + 100)) ;
     imageMode(CENTER);

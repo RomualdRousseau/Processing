@@ -14,7 +14,7 @@ class Bird extends Entity {
     brain.layer2 = new Layer(
     /* inputUnits */ brain.layer1.getOutputUnits(), 
     /* units */      2, 
-    /* activation */ new LinearActivationFunction());
+    /* activation */ new SoftmaxActivationFunction());
     brain.compile(
     /* shuffle */    true,
     /* optimizer */  new OptimizerGenetic(MUTATION_VARIANCE, MUTATION_RATE));
@@ -29,7 +29,7 @@ class Bird extends Entity {
     
     this.brain = new GeneticNeuralNetwork(jsonBrain);
     brain.layer1.activation = new TanhActivationFunction();
-    brain.layer2.activation = new LinearActivationFunction();
+    brain.layer2.activation = new SoftmaxActivationFunction();
     brain.compile(
     /* shuffle */    false,
     /* optimizer */  new OptimizerGenetic(MUTATION_VARIANCE, MUTATION_RATE));
@@ -93,7 +93,7 @@ class Bird extends Entity {
       (closest.bottom.y - this.position.y) / HEIGHT
       });
     Matrix output = this.brain.predict(input);
-    
+ 
     return output.data[0][0] > output.data[1][0];
   }
 
@@ -159,22 +159,22 @@ class Bird extends Entity {
     pushMatrix();
     translate(mapToScreenX(this.position.x), mapToScreenY(this.position.y));
     rotate(-constrain(this.velocity.heading(), radians(0), radians(45)));
-    image(BIRD_SPRITE, 0, 0, scaleToScreenX(BIRD_MASS), scaleToScreenY(BIRD_MASS));
+    image(BIRD_SPRITE, 0, 0, scaleToScreenXY(BIRD_MASS), scaleToScreenY(BIRD_MASS));
     popMatrix();
     
     if (!this.alive) {
       int frame = floor(frameCount * frameRate / 500.0) % 4;
       if (frame == 0) {
-        image(STAR_SPRITE, mapToScreenX(this.position.x + 32), mapToScreenY(this.position.y + 32), scaleToScreenX(32), scaleToScreenY(32));
+        image(STAR_SPRITE, mapToScreenX(this.position.x + 32), mapToScreenY(this.position.y + 32), scaleToScreenXY(32), scaleToScreenY(32));
       }
       if (frame == 1) {
-        image(STAR_SPRITE, mapToScreenX(this.position.x + 16), mapToScreenY(this.position.y - 16), scaleToScreenX(48), scaleToScreenY(48));
+        image(STAR_SPRITE, mapToScreenX(this.position.x + 16), mapToScreenY(this.position.y - 16), scaleToScreenXY(48), scaleToScreenY(48));
       }
       if (frame == 2) {
-        image(STAR_SPRITE, mapToScreenX(this.position.x - 16), mapToScreenY(this.position.y - 16), scaleToScreenX(64), scaleToScreenY(64));
+        image(STAR_SPRITE, mapToScreenX(this.position.x - 16), mapToScreenY(this.position.y - 16), scaleToScreenXY(64), scaleToScreenY(64));
       }
       if (frame == 3) {
-        image(STAR_SPRITE, mapToScreenX(this.position.x - 32), mapToScreenY(this.position.y + 32), scaleToScreenX(48), scaleToScreenY(48));
+        image(STAR_SPRITE, mapToScreenX(this.position.x - 32), mapToScreenY(this.position.y + 32), scaleToScreenXY(48), scaleToScreenY(48));
       }
     } else {
       for (int i = 0; i < smoke.size(); i++) {

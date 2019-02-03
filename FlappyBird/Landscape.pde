@@ -25,7 +25,7 @@ class Landscape {
 
   void update() {
     for (int i = 0; i < x.length; i++) {
-      this.x[i] += this.v[i] * frameTime;
+      this.x[i] += this.v[i] * SIMULATION_TIME;
       if (this.x[i] < -CITY_SIZE) {
         this.x[i] = WIDTH;
       }

@@ -6,8 +6,9 @@ class Resources_ {
   }
   
   void loadFonts() {
-    textFont(loadFont("NimbusMonoPS-Bold-32.vlw"));
-    //textFont(createFont("Broadway", 32));
+    if(!ANDROID) {
+      textFont(loadFont("NimbusMonoPS-Bold-64.vlw"));
+    }
   }
   
   void loadSprites() {
