@@ -433,7 +433,7 @@ class MeanSquaredErrorFunction implements LossFunction {
 
 class CrossEntropyFunction implements LossFunction {
   public Matrix apply(Matrix output, Matrix target) {
-    return target.copy().mult(-1).div(output);
+    return target.copy().mult(-1).div(output); // TODO: problem if output has 0 values!
   }
 }
 
