@@ -15,7 +15,7 @@ abstract class Optimizer {
     this.biasRate = biasRate;
   }
   
-  abstract void optimize(Layer layer, Matrix input, Matrix output, Matrix error);
+  abstract Matrix optimize(Layer layer, Matrix input, Matrix output, Matrix error);
 }
 
 class OptimizerSgd extends Optimizer {
@@ -27,11 +27,13 @@ class OptimizerSgd extends Optimizer {
     super(learningRate, biasRate);
   }
   
-  public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error).mult(this.learningRate);
-    Matrix delta = gradient.transform(input.transpose());
+  public Matrix optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
+    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error);
+    
+    Matrix delta = gradient.transform(input.transpose()).mult(this.learningRate);
     layer.weights.add(delta);
-    layer.bias.add(gradient.mult(this.biasRate));
+    layer.bias.add(gradient.copy().mult(this.learningRate * this.biasRate));
+    return gradient;
   }
 }
 
@@ -48,11 +50,13 @@ class OptimizerMomentum extends Optimizer {
     this.momentum = momentum;
   }
  
-  public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error).mult(this.learningRate);
-    layer.gradients.mult(this.momentum).add(gradient.mult(1.0 - this.momentum));
+  public Matrix optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
+    Matrix gradient = output.copy().map(layer.activation.derivate).mult(error);
+    layer.gradients.mult(this.momentum).add(gradient.mult(1.0 - this.momentum)).mult(this.learningRate);
+    
     Matrix delta = layer.gradients.transform(input.transpose());
     layer.weights.add(delta);
-    layer.bias.add(layer.gradients.mult(this.biasRate));
+    layer.bias.add(layer.gradients.copy().mult(this.biasRate));
+    return gradient;
   }
 }

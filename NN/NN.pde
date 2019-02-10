@@ -24,7 +24,8 @@ void setup() {
   
   model.layer2 = new Layer(
     /* inputUnits */  model.layer1.getOutputUnits(),
-    /* units */       1);
+    /* units */       1,
+    /* activation */  new LinearActivationFunction());
   
   model.compile(
     /* loss */      new MeanSquaredErrorFunction(),

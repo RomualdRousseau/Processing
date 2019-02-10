@@ -48,10 +48,10 @@ class NeuralNetwork {
     Matrix output = this.layer2.feedForward(hidden);
     
     Matrix loss = this.loss.apply(output, target);
-    this.optimizer.optimize(this.layer2, hidden, output, loss);
+    loss = this.optimizer.optimize(this.layer2, hidden, output, loss);
     
     loss = this.layer2.feedBackLoss(loss);
-    this.optimizer.optimize(this.layer1, input, hidden, loss);
+    loss = this.optimizer.optimize(this.layer1, input, hidden, loss);
   }
   
   public Matrix predict(Matrix input) {
