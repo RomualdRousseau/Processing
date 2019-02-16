@@ -1,7 +1,7 @@
 class Particle extends Entity {
-  Particle(Bird bird) {
+  Particle(Entity entity) {
     super();
-    this.position = new PVector(bird.position.x - BIRD_MASS / 4, bird.position.y - 20);
+    this.position = new PVector(entity.position.x - BIRD_MASS / 4, entity.position.y - 20);
     this.velocity = new PVector(random(-100, -50), random(-50, -10));
     this.acceleration = new PVector(0.0, 0.0);
   }

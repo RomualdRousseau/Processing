@@ -18,6 +18,8 @@ class Resources_ {
     STAR_SPRITE = loadImage("star.png");
     BONUS_SPRITE = loadImage("bonus.png");
     TROPHEE_SPRITE = loadImage("trophee.png");
+    FLOWER_SPRITE = loadImage("flower.png");
+    HEART_SPRITE = loadImage("heart.png");
   }
   
   void loadSounds(PApplet parent) {

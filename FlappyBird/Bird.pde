@@ -147,7 +147,7 @@ class Bird extends Entity {
     for (int i = smoke.size() - 1; i >= 0; i--) {
       Particle particle = smoke.get(i);
       particle.update();
-      if (particle.life > 50) {
+      if (particle.life > SMOKE_LIFE) {
         particle.kill();
         smoke.remove(particle);
       }

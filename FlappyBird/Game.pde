@@ -147,6 +147,7 @@ class Game_ {
       friend.meet(trophee);
       friend.update();
       friend.constrainToScreen();
+      friend.emitFlowers();
       
       for (int i = birds.size() - 1; i >= 0; i--) {
         Bird bird = birds.get(i);

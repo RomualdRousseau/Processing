@@ -35,15 +35,14 @@ void settings() {
 }
 
 void setup() {
-  if(ANDROID) {
+  if (ANDROID) {
     requestAllPermissions();
     ensureDataPathExist();
     orientation(PORTRAIT);
     simulationSteps = floor(600 / 30); // 30 is the frame rate
     frameRate(30);
-  }
-  else {
-    simulationSteps = floor(600 / frameRate);  
+  } else {
+    simulationSteps = floor(600 / frameRate);
   }
   smooth();
   Resources.loadAll(this);
@@ -55,12 +54,15 @@ void draw() {
   Game.mainloop();
   Game.render();
   UI.render();
+  if (!ANDROID && videoRecorded) {
+    saveFrame("frames/screen######.tif");
+  }
 }
 
 void mouseReleased() {
   if (mouseY > mapToScreenY(80)) {
-    if(UI.show) {
-      UI.mouseReleased();  
+    if (UI.show) {
+      UI.mouseReleased();
     } else {
       UI.show = true;
     }
@@ -71,8 +73,8 @@ void mouseReleased() {
 
 void mouseDragged() {
   if (mouseY > mapToScreenY(80)) {
-    if(UI.show) {
-      UI.mouseDragged();  
+    if (UI.show) {
+      UI.mouseDragged();
     } else {
       UI.show = true;
     }
@@ -86,5 +88,16 @@ void mouseMoved() {
     UI.show = true;
   } else {
     UI.show = false;
+  }
+}
+
+void keyPressed() {
+  if (key == 'r') {
+    videoRecorded = !videoRecorded;
+    if (videoRecorded) {
+      println("recording ...");
+    } else {
+      println("stop recording");
+    }
   }
 }

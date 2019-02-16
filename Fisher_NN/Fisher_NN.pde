@@ -1,8 +1,3 @@
-//import java.util.List;
-//import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Paths;
-
 static final String[] flowerWords = {
   "I. setosa", 
   "I. versicolor", 
@@ -12,17 +7,18 @@ static final String[] flowerWords = {
 final int iterationCount = 100;
 final int timeStepX = 10;
 
-GeneticNeuralNetwork model;
+ArrayList<Float[]> fisherSet;
 Matrix[] trainingInputs;
 Matrix[] trainingTargets;
 Matrix[] testInputs;
 Matrix[] testTargets;
+GeneticNeuralNetwork model;
 
 FloatList timeLine1 = new FloatList();
 FloatList timeLine2 = new FloatList();
 
-public ArrayList<Float[]> loadDataSet(String fileName) throws IOException {
-  ArrayList<Float[]> result = new ArrayList<Float[]>();
+public void loadDataSet(String fileName) throws IOException {
+  fisherSet = new ArrayList<Float[]>();
   Table table = loadTable(fileName, "header");  
   for (TableRow row : table.rows()) {
     Float[] dataRow = new Float[7];
@@ -34,50 +30,47 @@ public ArrayList<Float[]> loadDataSet(String fileName) throws IOException {
     dataRow[4] = label[0];
     dataRow[5] = label[1];
     dataRow[6] = label[2];
-    result.add(dataRow);
+    fisherSet.add(dataRow);
   }
-  return result;
-}
-
-void setup() {
-  size(800, 800); 
-  colorMode(HSB, 360, 100, 100, 100);
-
-  model = new GeneticNeuralNetwork()
-    .setMutationRate(0.1);
-
-  model.layer1 = new Layer(4, 4)
-    .setActivation(new TanhActivation())
-    .setInitializer(new GlorotUniformInitializer())
-    .setNormalize(true);
-
-  model.layer2 = new Layer(model.layer1.getOutputUnits(), 3)
-    .setActivation(new SoftmaxActivation())
-    .setInitializer(new GlorotUniformInitializer())
-    .setNormalize(false);
-
-  model.compile(
-    new SoftmaxCrossEntropy(), 
-    new OptimizerMomentum()
-    .setLearningRate(0.01)
-    .setLearningRateScheduler(new ExponentialScheduler(0.00001, 10000, 0.001)));
-
-  ArrayList<Float[]> fisherSet = null;
-  try {
-    fisherSet = loadDataSet("fisher's data.csv");
-  }
-  catch(Exception x) {
-    x.printStackTrace();
-  }
-
-  // Prepare the data
   normalize(fisherSet, 0);
   normalize(fisherSet, 1);
   normalize(fisherSet, 2);
   normalize(fisherSet, 3);
-  fisherSet = shuffle(fisherSet);
+}
 
+void buildModel() {
+  Layer layer1 = new Layer(4, 8)
+    .setActivation(new TanhActivation())
+    .setInitializer(new GlorotUniformInitializer())
+    .setNormalize(false);
+    
+  Layer layer2 = new Layer(layer1.getOutputUnits(), 3)
+    .setActivation(new LinearActivation())
+    .setInitializer(new GlorotUniformInitializer())
+    .setNormalize(true);
+
+  Layer layer3 = new Layer(layer2.getOutputUnits(), 3)
+    .setActivation(new SoftmaxActivation())
+    .setInitializer(new GlorotUniformInitializer())
+    .setNormalize(false);
+
+  Optimizer optimizer = new OptimizerMomentum()
+    .setLearningRate(0.001)
+    .setLearningRateScheduler(new ExponentialScheduler(0.001, iterationCount, 0.00001));
+
+  LossFunction loss = new SoftmaxCrossEntropy();
+
+  model = (GeneticNeuralNetwork) new GeneticNeuralNetwork()
+    .setMutationRate(0.1)
+    .addLayer(layer1)
+    .addLayer(layer2)
+    .addLayer(layer3);
+  model.compile(loss, optimizer);
+}
+
+void buildTraingAndTestSets() {
   // Partition the data: 80% training, 20% test
+  shuffle(fisherSet);
   int p = floor(fisherSet.size() * 0.8);
   ArrayList<Float[]> training = subset(fisherSet, 0, p);
   ArrayList<Float[]> test = subset(fisherSet, p, fisherSet.size());
@@ -115,15 +108,33 @@ void setup() {
   }
 }
 
+void setup() {
+  size(800, 800); 
+  textSize(16);
+  colorMode(HSB, 360, 100, 100, 100);
+
+  try {
+    loadDataSet("fisher's data.csv");
+    buildTraingAndTestSets();
+    buildModel();
+  }
+  catch(Exception x) {
+    x.printStackTrace();
+  }
+}
+
 void draw() {
   background(51);
+  stroke(255);
+  line(width / 2, 0, width / 2, height);
+  line(0, height / 2, width, height / 2);
 
   float error = 0.0;
   for (int i = 0; i < iterationCount; i++) {
     error += model.fit(trainingInputs, trainingTargets, 64, true).flatten(0);
   }
   error /= iterationCount;
-  
+
   timeLine1.append(error);
   if (timeLine1.size() > width / timeStepX + 1) {
     timeLine1.remove(0);
@@ -131,9 +142,27 @@ void draw() {
 
   strokeWeight(4);
   for (int i = 0; i < trainingInputs.length; i++) {
-    float x = map(trainingInputs[i].data[0][0], 0, 1.0, 0, width);
-    float y = map(trainingInputs[i].data[2][0], 0, 1.0, height, 0);
+    float x = map(trainingInputs[i].data[0][0], 0, 1.0, 1, width / 2 - 1);
+    float y = map(trainingInputs[i].data[1][0], 0, 1.0, height / 2 - 1, 1);
     float c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
+    stroke(c, 100, 100);
+    point(x, y);
+
+    x = map(trainingInputs[i].data[0][0], 0, 1.0, width / 2 + 1, width - 1);
+    y = map(trainingInputs[i].data[2][0], 0, 1.0, height / 2 - 1, 1);
+    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
+    stroke(c, 100, 100);
+    point(x, y);
+
+    x = map(trainingInputs[i].data[1][0], 0, 1.0, width / 2 + 1, width);
+    y = map(trainingInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
+    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
+    stroke(c, 100, 100);
+    point(x, y);
+
+    x = map(trainingInputs[i].data[2][0], 0, 1.0, 1, width / 2 - 1);
+    y = map(trainingInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
+    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
     stroke(c, 100, 100);
     point(x, y);
   }
@@ -147,9 +176,48 @@ void draw() {
       success++;
     }
 
-    float x = map(testInputs[i].data[0][0], 0, 1.0, 0, width);
-    float y = map(testInputs[i].data[2][0], 0, 1.0, height, 0);
+    float x = map(testInputs[i].data[0][0], 0, 1.0, 1, width / 2 - 1);
+    float y = map(testInputs[i].data[1][0], 0, 1.0, height / 2 - 1, 1);
     float c = map(i2, 0, 3, 0, 360);
+    strokeWeight(8);
+    stroke(c, 100, 100);
+    point(x, y);
+    if (i1 != i2) {
+      c = map(i1, 0, 3, 0, 360);
+      strokeWeight(16);
+      stroke(c, 100, 100, 50);
+      point(x, y);
+    }
+
+    x = map(testInputs[i].data[0][0], 0, 1.0, width / 2 + 1, width - 1);
+    y = map(testInputs[i].data[2][0], 0, 1.0, height / 2 - 1, 1);
+    c = map(i2, 0, 3, 0, 360);
+    strokeWeight(8);
+    stroke(c, 100, 100);
+    point(x, y);
+    if (i1 != i2) {
+      c = map(i1, 0, 3, 0, 360);
+      strokeWeight(16);
+      stroke(c, 100, 100, 50);
+      point(x, y);
+    }
+
+    x = map(testInputs[i].data[1][0], 0, 1.0, width / 2 + 1, width - 1);
+    y = map(testInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
+    c = map(i2, 0, 3, 0, 360);
+    strokeWeight(8);
+    stroke(c, 100, 100);
+    point(x, y);
+    if (i1 != i2) {
+      c = map(i1, 0, 3, 0, 360);
+      strokeWeight(16);
+      stroke(c, 100, 100, 50);
+      point(x, y);
+    }
+
+    x = map(testInputs[i].data[2][0], 0, 1.0, 1, width / 2 - 1);
+    y = map(testInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
+    c = map(i2, 0, 3, 0, 360);
     strokeWeight(8);
     stroke(c, 100, 100);
     point(x, y);
@@ -177,9 +245,7 @@ void draw() {
     vertex(x, y);
   }
   endShape();
-  
-  
-  
+
   stroke(60, 100, 100);
   beginShape();
   for (int i = 0; i < timeLine2.size(); i++) {
@@ -188,15 +254,21 @@ void draw() {
     vertex(x, y);
   }
   endShape();
+
+  text(String.format("%d %.5f %.2f%%", model.optimizer.epochs, model.optimizer.learningRate, accuracy * 100), 1, height - 1);
+
+  if (model.optimizer.epochs > 1000 && accuracy < 0.8) {
+    model.reset();
+  }
 }
 
 void keyPressed() {
   if (key == ' ') {
-    println("transfer model");
+    println("mutate model");
     model.optimizer.reset();
     model.mutate();
   } else if (key == 'n') {
-    println("new model");
-    model.reset();
+    println("new training");
+    buildTraingAndTestSets();
   }
 }
