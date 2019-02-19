@@ -28,6 +28,15 @@ class Hero {
       return false;
     }
   }
+  
+  boolean inZone(Target target) {
+    float d = this.location.dist(target.location);
+    if (d < target.size.y * 5 / 2) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   boolean out() {
     if (this.location.x < 0 || this.location.x > 400 || this.location.y < 0 || this.location.y > 400) {
@@ -56,6 +65,7 @@ class Hero {
     translate(x, y);
     rotate(PI / 2 - this.speed.heading());
     fill(255);
+    noStroke();
     //ellipse(0, 0, 10, 10);
     rect(-sx / 2, 0, sx, sy);
     popMatrix();

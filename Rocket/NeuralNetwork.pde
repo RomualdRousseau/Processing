@@ -1,9 +1,9 @@
 abstract class NeuralNetwork {
   ArrayList<Layer> layers =  new ArrayList<Layer>();
-  Optimizer optimizer;
-
+  ArrayList<Matrix> outputs = new ArrayList<Matrix>();
+  
   public NeuralNetwork() {
-    this.optimizer = null;
+    
   }
 
   public NeuralNetwork(JSONObject json) {
@@ -11,7 +11,6 @@ abstract class NeuralNetwork {
     for (int i  = 0; i < jsonLayers.size(); i++) {
       this.layers.add(new Layer(jsonLayers.getJSONObject(i)));
     }
-    this.optimizer = null;
   }
 
   public abstract NeuralNetwork clone();
@@ -25,15 +24,16 @@ abstract class NeuralNetwork {
     for (Layer l : this.layers) {
       l.reset();
     }
-    this.optimizer.reset();
   }
 
   public Matrix predict(Matrix input) {
-    Matrix current = input;
+    outputs.clear();
+    outputs.add(input);
     for (Layer l : this.layers) {
-      current = l.activation.apply(xw_plus_b(current, l.weights, l.bias));
+      Matrix current = outputs.get(outputs.size() - 1);
+      outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
     }
-    return current;
+    return outputs.get(outputs.size() - 1);
   }
 
   public JSONObject toJSON() {
@@ -49,15 +49,18 @@ abstract class NeuralNetwork {
 
 class SequentialNeuralNetwork extends NeuralNetwork {
   LossFunction loss;
-
+  Optimizer optimizer;
+  
   public SequentialNeuralNetwork() {
     super();
     this.loss = null;
+    this.optimizer = null;
   }
 
   public SequentialNeuralNetwork(JSONObject json) {
     super(json);
     this.loss = null;
+    this.optimizer = null;
   }
 
   private SequentialNeuralNetwork(SequentialNeuralNetwork parent) {
@@ -70,6 +73,16 @@ class SequentialNeuralNetwork extends NeuralNetwork {
 
   public SequentialNeuralNetwork clone() {
     return new SequentialNeuralNetwork(this);
+  }
+  
+  public SequentialNeuralNetwork addLayer(Layer layer) {
+    super.addLayer(layer);
+    return this;
+  }
+  
+  public void reset() {
+    super.reset();
+    this.optimizer.reset();
   }
 
   public SequentialNeuralNetwork compile(LossFunction loss, Optimizer optimizer) {
@@ -89,39 +102,28 @@ class SequentialNeuralNetwork extends NeuralNetwork {
       }
     }
 
-    this.optimizer.updateEpochs();
+    this.optimizer.decayLearningRate();
 
     return sum.div(inputs.length);
   }
 
   public Matrix fitOnce(Matrix input, Matrix target) {
-    ArrayList<Matrix> outputs = new ArrayList<Matrix>();
-    outputs.add(input);
-    for (Layer l : this.layers) {
-      Matrix current = outputs.get(outputs.size() - 1);
-      outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
+    Matrix output = this.predict(input); 
+    
+    int last = this.layers.size() - 1; 
+    Matrix lossRate = this.loss.derivate(output, target);
+    lossRate = this.optimizer.minimize(this.layers.get(last), this.outputs.get(last), this.outputs.get(last + 1), lossRate);
+    
+    for (int hidden = last - 1; hidden >= 0; hidden--) {
+      lossRate = this.loss.computeWeightedLoss(lossRate, this.layers.get(hidden + 1).weights);  
+      lossRate = this.optimizer.minimize(this.layers.get(hidden), this.outputs.get(hidden), this.outputs.get(hidden + 1), lossRate);
     }
-
-    Matrix lossRates = null;
-    for (int i = this.layers.size() - 1; i >= 0; i--) {
-      Layer layer = this.layers.get(i);
-      Matrix output = outputs.get(i + 1);
-
-      if (lossRates == null) {
-        lossRates = this.loss.derivate(output, target);
-      } else {
-        lossRates = this.loss.computeWeightedLoss(lossRates, this.layers.get(i + 1).weights);
-      }      
-      lossRates = layer.activation.derivate(output, lossRates);
-
-      this.optimizer.minimize(layer, outputs.get(i), output, lossRates);
-    }
-
-    return this.loss.apply(outputs.get(outputs.size() - 1), target);
+    
+    return this.loss.apply(output, target);
   }
 }
 
-class GeneticNeuralNetwork extends SequentialNeuralNetwork {
+class GeneticNeuralNetwork extends SequentialNeuralNetwork implements Individual {
   float mutationRate;
   float fitness;
 
@@ -146,15 +148,28 @@ class GeneticNeuralNetwork extends SequentialNeuralNetwork {
   public GeneticNeuralNetwork clone() {
     return new GeneticNeuralNetwork(this);
   }
+  
+  public GeneticNeuralNetwork addLayer(Layer layer) {
+    super.addLayer(layer);
+    return this;
+  }
+  
+  public void reset() {
+    super.reset();
+    this.fitness = 0.0;
+  }
 
   public GeneticNeuralNetwork setMutationRate(float mutationRate) {
     this.mutationRate = mutationRate;
     return this;
   }
-
-  public void reset() {
-    super.reset();
-    this.fitness = 0.0;
+  
+  public float getFitness() {
+    return this.fitness;
+  }
+  
+  public void setFitness(float fitness) {
+    this.fitness = fitness;
   }
 
   public void mutate() {
@@ -306,23 +321,6 @@ class HeUniformInitializer implements InitializerFunction {
 
 interface LearningRateScheduler {
   void apply(Optimizer optimizer, int epoch);
-}
-
-class TimeBasedScheduler implements LearningRateScheduler {
-  float decay;
-  int step;
-  float minRate;
-
-  public TimeBasedScheduler(float decay, int step, float minRate) {
-    this.decay = decay;
-    this.step = step;
-    this.minRate = minRate;
-  }
-
-  public void apply(Optimizer optimizer, int epoch) {
-    int a = epoch / this.step;
-    optimizer.learningRate = max(this.minRate, optimizer.learningRate0 / (1.0 + this.decay * a));
-  }
 }
 
 class ExponentialScheduler implements LearningRateScheduler {
@@ -579,16 +577,18 @@ abstract class Optimizer {
     this.epochs = 0;
   }
 
-  public void updateEpochs() {
+  public void decayLearningRate() {
     this.epochs++;
     if (this.learningRateScheduler != null) {
       this.learningRateScheduler.apply(this, this.epochs);
     }
   }
 
-  public void minimize(Layer layer, Matrix input, Matrix output, Matrix lossRate) {
-    this.computeGradients(layer, output, lossRate);
+  public Matrix minimize(Layer layer, Matrix input, Matrix output, Matrix lossRate) {
+    Matrix newLossRate = layer.activation.derivate(output, lossRate);
+    this.computeGradients(layer, output, newLossRate);
     this.applyGradients(layer, input);
+    return newLossRate;
   }
 
   abstract public void computeGradients(Layer layer, Matrix output, Matrix lossRate);
@@ -605,7 +605,7 @@ class OptimizerSgd extends Optimizer {
   }
 
   public void computeGradients(Layer layer, Matrix output, Matrix lossRate) {
-    layer.gradients.mult(0.0).add(lossRate).mult(this.learningRate);
+    layer.gradients.zero().add(lossRate).mult(this.learningRate);
   }
 }
 
@@ -623,6 +623,7 @@ class OptimizerMomentum extends Optimizer {
   }
 
   public void computeGradients(Layer layer, Matrix output, Matrix lossRate) {
-    layer.gradients.mult(this.momentum).add(lossRate.copy().mult(this.learningRate * (1.0 - this.momentum)));
+    Matrix gradients = lossRate.copy().mult(this.learningRate);
+    layer.gradients.mult(this.momentum).add(gradients.mult(1.0 - this.momentum));
   }
 }

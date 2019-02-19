@@ -1,52 +1,53 @@
 Matrix[] inputs = {
-  new Matrix(new float[] {0, 0}),
-  new Matrix(new float[] {0, 1}),
-  new Matrix(new float[] {1, 0}),
+  new Matrix(new float[] {0, 0}), 
+  new Matrix(new float[] {0, 1}), 
+  new Matrix(new float[] {1, 0}), 
   new Matrix(new float[] {1, 1})
 };
 
 Matrix[] targets = {
-  new Matrix(new float[] {0}),
-  new Matrix(new float[] {1}),
-  new Matrix(new float[] {1}),
+  new Matrix(new float[] {0}), 
+  new Matrix(new float[] {1}), 
+  new Matrix(new float[] {1}), 
   new Matrix(new float[] {0})
 };
- 
-NeuralNetwork model = new NeuralNetwork();
-  
+
+SequentialNeuralNetwork model = new SequentialNeuralNetwork();
+
 void setup() {
   size(400, 400, P2D);
-  
-  model.layer1 = new Layer(
-    /* inputUnits */  2,
-    /* units */       2,
-    /* activation */  new TanhActivationFunction());
-  
-  model.layer2 = new Layer(
-    /* inputUnits */  model.layer1.getOutputUnits(),
-    /* units */       1,
-    /* activation */  new LinearActivationFunction());
-  
+
+  model.addLayer(new Layer(2, 4)
+    .setActivation(new TanhActivation())
+    .setInitializer(new GlorotUniformInitializer()));
+
+  model.addLayer(new Layer(4, 1)
+    .setActivation(new LinearActivation())
+    .setInitializer(new GlorotUniformInitializer()));
+
   model.compile(
-    /* loss */      new MeanSquaredErrorFunction(),
-    /* optimizer */ new OptimizerMomentum(1.0),
-    /* scheduler */ new ExponentialScheduler(0.1));
+    new MeanSquaredError(), 
+    new OptimizerMomentum()
+    .setLearningRate(0.01)
+    .setLearningRateScheduler(new ExponentialScheduler(0.01, 500, 0.001)));
 }
 
 void draw() {
   final int r = 100;
   final int w = width / r;
   final int h = height / r;
-  
-  model.fit(inputs, targets, 1, 500, true);
-  
+
+  for (int i = 0; i < 500; i++) { 
+    model.fit(inputs, targets, 4, true);
+  }
+
   background(0);
   noStroke();
-  for(int i = 0; i <= r; i++) {
-    for(int j = 0; j <= r; j++) {
+  for (int i = 0; i <= r; i++) {
+    for (int j = 0; j <= r; j++) {
       Matrix input = new Matrix(new float[] {(float) i / (float) r, (float) j / (float) r});
       fill(model.predict(input).data[0][0] * 255); 
-      rect(j * w, i * h, w, h);    
+      rect(j * w, i * h, w, h);
     }
   }
 }
