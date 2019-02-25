@@ -9,8 +9,8 @@ static final float LEARNING_RATE_MAX = 0.001;
 static final float LEARNING_RATE_MIN = 0.0001;
 static final float LEARNING_RATE_DECAY = 0.018;
 static final float MUTATION_RATE = 0.1;
-static final int POPULATION_SIZE = 10;
-static final int GENERATION_SIZE = 10;
+static final int POPULATION_SIZE = 1000;
+static final int GENERATION_SIZE = 1000;
 
 void setup() {
   size(400, 400, P2D);
@@ -53,29 +53,27 @@ void hyperParameters() {
 
     Genetic.newPool();
 
-    while (population.size() > 0) {
-
-      for (int i = 0; i < population.size(); i++) {
-        DQN dqn = population.get(i);
-        println(String.format("Individual: %d %d %d %d %f %f %d %d %d%%", i, 
-          dqn.memoryReplaySize, 
-          dqn.targetSyncRate, 
-          dqn.qnetworkHiddenCount, 
-          dqn.greedyRate, 
-          dqn.qnetwork.optimizer.learningRate, 
-          dqn.episodeCount, 
-          floor(dqn.getFitness()), 
-          floor(dqn.episodeCount * 100 / EPISODE_MAX)));
-      }
-
-      for (int i = population.size() - 1; i >= 0; i--) {
-        DQN dqn = population.get(i);
+    for (int i = population.size() - 1; i >= 0; i--) {
+      DQN dqn = population.get(i);
+      
+      println(String.format("Individual %d: processing ...", i));
+      
+      while (dqn.episodeCount < EPISODE_MAX) {
         dqn.learn();
-        if (dqn.episodeCount == EPISODE_MAX) {
-          Genetic.pool.add(dqn);
-          population.remove(i);
-        }
       }
+      
+      Genetic.pool.add(dqn);
+      population.remove(dqn);
+
+      println(String.format("Individual %d: %d %d %d %f %f %d %d %d%%", i, 
+        dqn.memoryReplaySize, 
+        dqn.targetSyncRate, 
+        dqn.qnetworkHiddenCount, 
+        dqn.greedyRate, 
+        dqn.qnetwork.optimizer.learningRate, 
+        dqn.episodeCount, 
+        floor(dqn.getFitness()), 
+        floor(dqn.episodeCount * 100 / EPISODE_MAX)));
     }
   }
 

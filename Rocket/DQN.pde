@@ -133,6 +133,8 @@ class DQN implements Individual {
       return;
     }
 
+    this.qnetwork.zeroGradients();
+
     for (int b = 0; b < BATCH_SIZE; b++) {
       MemorySlot m = this.memoryReplay.pickOne();
 
@@ -143,7 +145,8 @@ class DQN implements Individual {
         target.set(m.a, 0, m.reward);
       } else {
         Matrix q_a_s_1 = this.qtarget.predict(new Matrix(m.s_1));
-        float maxQ = q_a_s_1.get(q_a_s_1.argmax(0), 0);
+        //float maxQ = q_a_s_1.get(q_a_s_1.argmax(0), 0);
+        float maxQ = q_a_s_1.get(output.argmax(0), 0);
         target.set(m.a, 0, m.reward + DISCOUNT_RATE * maxQ);
       }
 
