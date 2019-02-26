@@ -12,7 +12,7 @@ abstract class NeuralNetwork {
     }
   }
 
-  public abstract NeuralNetwork clone();
+  abstract public NeuralNetwork clone();
 
   public NeuralNetwork addLayer(Layer layer) {
     layer.index = this.layers.size();
@@ -27,13 +27,13 @@ abstract class NeuralNetwork {
   }
 
   public Matrix predict(Matrix input) {
-    outputs.clear();
-    outputs.add(input);
+    this.outputs.clear();
+    this.outputs.add(input);
     for (Layer l : this.layers) {
-      Matrix current = outputs.get(outputs.size() - 1);
-      outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
+      Matrix current = this.outputs.get(outputs.size() - 1);
+      this.outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
     }
-    return outputs.get(outputs.size() - 1);
+    return this.outputs.get(outputs.size() - 1);
   }
 
   public JSONObject toJSON() {
@@ -67,8 +67,8 @@ class SequentialNeuralNetwork extends NeuralNetwork {
     for (Layer l : parent.layers) {
       this.layers.add(l.clone());
     }
-    this.loss = parent.loss.compile(this);
-    this.optimizer = parent.optimizer.compile(this);
+    this.loss = parent.loss.clone().compile(this);
+    this.optimizer = parent.optimizer.clone().compile(this);
   }
 
   public SequentialNeuralNetwork clone() {
@@ -529,6 +529,8 @@ class SoftmaxActivation implements ActivationFunction {
 abstract class LossFunction {
   NeuralNetwork model;
 
+  abstract public LossFunction clone();
+  
   public LossFunction compile(NeuralNetwork model) {
     this.model = model;
     return this;
@@ -539,12 +541,19 @@ abstract class LossFunction {
   }
 
   public void backward(Matrix lossRate) {
-    int output = this.model.layers.size() - 1;
-    lossRate = this.minimize(this.model.layers.get(output), this.model.outputs.get(output), this.model.outputs.get(output + 1), lossRate);
+    ArrayList<Layer> layers =  this.model.layers;
+    ArrayList<Matrix> outputs = this.model.outputs;
+    int output = layers.size() - 1;
+    
+    if(outputs.size() < layers.size() + 1) {
+      throw new IllegalArgumentException("Predict should run before backward");
+    }
+    
+    lossRate = this.minimize(layers.get(output), outputs.get(output), outputs.get(output + 1), lossRate);
     
     for (int hidden = output - 1; hidden >= 0; hidden--) {
-      lossRate = this.computeWeightedLoss(lossRate, this.model.layers.get(hidden + 1).weights);
-      lossRate = this.minimize(this.model.layers.get(hidden), this.model.outputs.get(hidden), this.model.outputs.get(hidden + 1), lossRate);
+      lossRate = this.computeWeightedLoss(lossRate, layers.get(hidden + 1).weights);
+      lossRate = this.minimize(layers.get(hidden), outputs.get(hidden), outputs.get(hidden + 1), lossRate);
     }
   }
 
@@ -561,6 +570,10 @@ abstract class LossFunction {
 }
 
 class MeanSquaredError extends LossFunction {
+  public LossFunction clone() {
+    return new MeanSquaredError();
+  }
+  
   public Matrix apply(Matrix output, Matrix target) {
     final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
       public final Float apply(Float y, int row, int col, Matrix output) {
@@ -577,6 +590,10 @@ class MeanSquaredError extends LossFunction {
 }
 
 class SoftmaxCrossEntropy extends LossFunction {
+  public LossFunction clone() {
+    return new SoftmaxCrossEntropy();
+  }
+  
   public Matrix apply(Matrix output, Matrix target) {
     final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
       public final Float apply(Float y, int row, int col, Matrix output) {
@@ -655,6 +672,8 @@ abstract class Optimizer {
       this.applyGradients(layer);
     }
   }
+  
+  abstract public Optimizer clone();
 
   abstract public void applyGradients(Layer layer);
 }
@@ -697,6 +716,10 @@ class OptimizerSgd extends Optimizer {
     }
 
     return this;
+  }
+  
+  public Optimizer clone() {
+    return new OptimizerSgd().setMomentum(this.momentum);
   }
 
   public void applyGradients(Layer layer) {

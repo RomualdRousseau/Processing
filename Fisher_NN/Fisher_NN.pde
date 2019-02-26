@@ -132,7 +132,7 @@ void draw() {
 
   float error = 0.0;
   for (int i = 0; i < iterationCount; i++) {
-    error += model.fit(trainingInputs, trainingTargets, 64, true).flatten(0);
+    error += model.fit(trainingInputs, trainingTargets, 64, false).flatten(0);
   }
   error /= iterationCount;
 

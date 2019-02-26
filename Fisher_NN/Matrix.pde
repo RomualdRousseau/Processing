@@ -60,6 +60,10 @@ class Matrix {
   public float get(int row, int col) {
     return this.data[row][col];
   }
+  
+  public void set(int row, int col, float v) {
+    this.data[row][col] = v;
+  }
 
   public Matrix zero() {
     for (int i = 0; i < this.rows; i++) {

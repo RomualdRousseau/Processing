@@ -1,24 +1,49 @@
 static final int EPISODE_DURATION = 1000;
 static final int EPISODE_MAX = 1000;
 static final float DISCOUNT_RATE = 0.95;
-static final int BATCH_SIZE = 32;
+static final int BATCH_SIZE = 64;
 static final float GREEDY_MAX = 1.0;
 static final float GREEDY_MIN = 0.05;
 static final float GREEDY_DECAY = 0.018;
-static final float LEARNING_RATE_MAX = 0.001;
-static final float LEARNING_RATE_MIN = 0.0001;
+static final float LEARNING_RATE_MAX = 0.1;
+static final float LEARNING_RATE_MIN = 0.001;
 static final float LEARNING_RATE_DECAY = 0.018;
 static final float MUTATION_RATE = 0.1;
-static final int POPULATION_SIZE = 1000;
-static final int GENERATION_SIZE = 1000;
+static final int POPULATION_SIZE = 100;
+static final int GENERATION_SIZE = 100;
+
+int[] memoryReplaySizeDistribution = { 1000, 10000, 100000 };
+int[] targetSyncRateDistribution = { 100, 1000, 10000 };
+int[] qnetworkHiddenCountDistribution = { 8, 12, 16, 20, 24, 28, 32 };
+
+DQN oneDQN;
 
 void setup() {
   size(400, 400, P2D);
-  thread("hyperParameters");
+
+  oneDQN = new DQN(new Game(), 100000, 10000, 32);
+  oneDQN.compile();
 }
 
 void draw() {
+  print(String.format("Individual %d: %d %d %d processing ...", 0, 
+    oneDQN.memoryReplaySize, 
+    oneDQN.targetSyncRate, 
+    oneDQN.qnetworkHiddenCount));
+
+  for (int i  = 0; i < 10; i++) {
+    oneDQN.learn();
+  }
+
+  println(String.format("%d %f %f %d %d", 
+    oneDQN.episodeCount, 
+    oneDQN.greedyRate, 
+    oneDQN.qnetwork.optimizer.learningRate, 
+    oneDQN.episodeCount, 
+    floor(oneDQN.getFitness())));
+
   background(51);
+  oneDQN.game.show();
 }
 
 void hyperParameters() {
@@ -55,28 +80,24 @@ void hyperParameters() {
 
     for (int i = population.size() - 1; i >= 0; i--) {
       DQN dqn = population.get(i);
-      
-      println(String.format("Individual %d: %d %d %d", i, 
+
+      print(String.format("Individual %d: %d %d %d processing ...", i, 
         dqn.memoryReplaySize, 
         dqn.targetSyncRate, 
         dqn.qnetworkHiddenCount));
-        
+
       while (dqn.episodeCount < EPISODE_MAX) {
         dqn.learn();
       }
-      
+
       Genetic.pool.add(dqn);
       population.remove(dqn);
 
-      println(String.format("Individual %d: %d %d %d %f %f %d %d %d%%", i, 
-        dqn.memoryReplaySize, 
-        dqn.targetSyncRate, 
-        dqn.qnetworkHiddenCount, 
+      println(String.format("%f %f %d %d", 
         dqn.greedyRate, 
         dqn.qnetwork.optimizer.learningRate, 
         dqn.episodeCount, 
-        floor(dqn.getFitness()), 
-        floor(dqn.episodeCount * 100 / EPISODE_MAX)));
+        floor(dqn.getFitness())));
     }
   }
 

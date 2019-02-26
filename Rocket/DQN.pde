@@ -14,6 +14,8 @@ interface BaseGame {
   void restart(int episode);
 
   void runOneStep(int a);
+  
+  void show();
 }
 
 class DQN implements Individual {
@@ -34,9 +36,9 @@ class DQN implements Individual {
 
   DQN(BaseGame game) {
     this(game, 
-      floor(random(1000, 100000)),  // memoryReplaySize
-      floor(random(10, 1000)),      // targetSyncRate
-      floor(random(8, 32)));        // qnetworkHiddenCount
+      memoryReplaySizeDistribution[floor(random(memoryReplaySizeDistribution.length))],
+      targetSyncRateDistribution[floor(random(targetSyncRateDistribution.length))],
+      qnetworkHiddenCountDistribution[floor(random(qnetworkHiddenCountDistribution.length))]);
   }
 
   DQN(BaseGame game, DQN parent) {
@@ -71,7 +73,7 @@ class DQN implements Individual {
       this.memoryReplaySize += constrain(floor(random(-100, 100)), 1000, 100000);
     }
     if (random(1.0) < MUTATION_RATE) {
-      this.targetSyncRate += constrain(floor(random(-100, 100)), 1000, 10000);
+      this.targetSyncRate += constrain(floor(random(-100, 100)), 100, 10000);
     }
     if (random(1.0) < MUTATION_RATE) {
       this.qnetworkHiddenCount += constrain(floor(random(-4, 4)), 8, 32);
@@ -83,25 +85,7 @@ class DQN implements Individual {
     this.qnetwork = this.buildModel(this.qnetworkHiddenCount);
     this.qtarget = qnetwork.clone();
   }
-
-  public void learn() {
-    float[] s = this.game.getState();
-    int a = this.predict(s);
-    this.game.runOneStep(a);
-
-    this.fit(s, a);
-
-    episodeStep++;
-    if (game.isGameOver() || episodeStep >= EPISODE_DURATION) {
-      if (game.isWon()) {
-        this.qnetwork.fitness += 1.0;
-      }
-      episodeStep = 0;
-      episodeCount++;
-      this.game.restart(episodeCount);
-    }
-  }
-
+  
   public int predict(float[] s) {
     int a;
     float r;
@@ -120,6 +104,24 @@ class DQN implements Individual {
     }
 
     return a;
+  }
+
+  public void learn() {
+    float[] s = this.game.getState();
+    int a = this.predict(s);
+    this.game.runOneStep(a);
+
+    this.fit(s, a);
+
+    episodeStep++;
+    if (game.isGameOver() || episodeStep >= EPISODE_DURATION) {
+      if (game.isWon()) {
+        this.qnetwork.fitness += 1.0;
+      }
+      episodeStep = 0;
+      episodeCount++;
+      this.game.restart(episodeCount);
+    }
   }
 
   public void fit(float[] s, int a) {
@@ -149,7 +151,7 @@ class DQN implements Individual {
         float maxQ = q_a_s_1.get(output.argmax(0), 0);
         target.set(m.a, 0, m.reward + DISCOUNT_RATE * maxQ);
       }
-
+      
       Matrix lossRate = this.qnetwork.loss.derivate(output, target);
       this.qnetwork.loss.backward(lossRate);
     }
