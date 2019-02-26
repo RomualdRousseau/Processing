@@ -1,9 +1,8 @@
 abstract class NeuralNetwork {
   ArrayList<Layer> layers =  new ArrayList<Layer>();
-  Optimizer optimizer;
+  ArrayList<Matrix> outputs = new ArrayList<Matrix>();
 
   public NeuralNetwork() {
-    this.optimizer = null;
   }
 
   public NeuralNetwork(JSONObject json) {
@@ -11,12 +10,12 @@ abstract class NeuralNetwork {
     for (int i  = 0; i < jsonLayers.size(); i++) {
       this.layers.add(new Layer(jsonLayers.getJSONObject(i)));
     }
-    this.optimizer = null;
   }
 
   public abstract NeuralNetwork clone();
 
   public NeuralNetwork addLayer(Layer layer) {
+    layer.index = this.layers.size();
     this.layers.add(layer);
     return this;
   }
@@ -25,15 +24,16 @@ abstract class NeuralNetwork {
     for (Layer l : this.layers) {
       l.reset();
     }
-    this.optimizer.reset();
   }
 
   public Matrix predict(Matrix input) {
-    Matrix current = input;
+    outputs.clear();
+    outputs.add(input);
     for (Layer l : this.layers) {
-      current = l.activation.apply(xw_plus_b(current, l.weights, l.bias));
+      Matrix current = outputs.get(outputs.size() - 1);
+      outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
     }
-    return current;
+    return outputs.get(outputs.size() - 1);
   }
 
   public JSONObject toJSON() {
@@ -49,79 +49,91 @@ abstract class NeuralNetwork {
 
 class SequentialNeuralNetwork extends NeuralNetwork {
   LossFunction loss;
+  Optimizer optimizer;
 
   public SequentialNeuralNetwork() {
     super();
     this.loss = null;
+    this.optimizer = null;
   }
 
   public SequentialNeuralNetwork(JSONObject json) {
     super(json);
     this.loss = null;
+    this.optimizer = null;
   }
 
   private SequentialNeuralNetwork(SequentialNeuralNetwork parent) {
     for (Layer l : parent.layers) {
       this.layers.add(l.clone());
     }
-    this.loss = parent.loss;
-    this.optimizer = parent.optimizer;
+    this.loss = parent.loss.compile(this);
+    this.optimizer = parent.optimizer.compile(this);
   }
 
   public SequentialNeuralNetwork clone() {
     return new SequentialNeuralNetwork(this);
   }
 
+  public void reset() {
+    super.reset();
+    this.optimizer.reset();
+  }
+
+  public SequentialNeuralNetwork addLayer(Layer layer) {
+    super.addLayer(layer);
+    return this;
+  }
+
   public SequentialNeuralNetwork compile(LossFunction loss, Optimizer optimizer) {
-    this.loss = loss;
-    this.optimizer = optimizer;
+    this.loss = loss.compile(this);
+    this.optimizer = optimizer.compile(this);
     return this;
   }
 
   public Matrix fit(Matrix[] inputs, Matrix[] targets, int batchSize, boolean shuffle) {
-    Matrix sum = new Matrix(this.layers.get(this.layers.size() - 1).getOutputUnits(), 1);
-
-    for (int t = 0; t < inputs.length; t += batchSize) {
-      int bs = min(batchSize, inputs.length - t);
-      for (int b = 0; b < batchSize; b++) {
-        int i = (shuffle) ? floor(random(t, t + bs)) : t + b;
-        sum.add(this.fitOnce(inputs[i], targets[i]));
-      }
+    if (inputs.length != targets.length) {
+      throw new IllegalArgumentException("Inputs and Targets must have same number of elements");
     }
 
-    this.optimizer.updateEpochs();
+    if(shuffle) {
+      Matrix temp;
+      for(int i = inputs.length - 1; i > 0; i--) {
+        int j = floor(random(0, i + 1));
+        
+        temp = inputs[j];
+        inputs[j] = inputs[i];
+        inputs[i] = temp;
+        
+        temp = targets[j];
+        targets[j] = targets[i];
+        targets[i] = temp;
+      }
+    }
+    
+    Matrix sum = new Matrix(this.layers.get(this.layers.size() - 1).weights.rows, 1);
+    
+    for (int t = 0; t < inputs.length; t += batchSize) {
+      this.optimizer.zeroGradients();
+
+      int bs = min(t + batchSize, inputs.length);
+      for (int b = t; b < bs; b++) {
+        Matrix output = this.predict(inputs[b]);
+        Matrix lossRate = this.loss.derivate(output, targets[b]);
+        this.loss.backward(lossRate);
+        sum.add(this.loss.apply(output, targets[b]));
+      }
+
+      this.optimizer.step();
+    }
+
+    this.optimizer.decayLearningRate();
 
     return sum.div(inputs.length);
   }
-
-  public Matrix fitOnce(Matrix input, Matrix target) {
-    ArrayList<Matrix> outputs = new ArrayList<Matrix>();
-    outputs.add(input);
-    for (Layer l : this.layers) {
-      Matrix current = outputs.get(outputs.size() - 1);
-      outputs.add(l.activation.apply(xw_plus_b(current, l.weights, l.bias)));
-    }
-
-    Matrix lossRates = null;
-    for (int i = this.layers.size() - 1; i >= 0; i--) {
-      Layer layer = this.layers.get(i);
-      Matrix output = outputs.get(i + 1);
-
-      if (lossRates == null) {
-        lossRates = this.loss.derivate(output, target);
-      } else {
-        lossRates = this.loss.computeWeightedLoss(lossRates, this.layers.get(i + 1).weights);
-      }      
-      lossRates = layer.activation.derivate(output, lossRates);
-
-      this.optimizer.minimize(layer, outputs.get(i), output, lossRates);
-    }
-
-    return this.loss.apply(outputs.get(outputs.size() - 1), target);
-  }
 }
 
-class GeneticNeuralNetwork extends SequentialNeuralNetwork {
+class GeneticNeuralNetwork extends SequentialNeuralNetwork implements Individual {
   float mutationRate;
   float fitness;
 
@@ -147,14 +159,27 @@ class GeneticNeuralNetwork extends SequentialNeuralNetwork {
     return new GeneticNeuralNetwork(this);
   }
 
-  public GeneticNeuralNetwork setMutationRate(float mutationRate) {
-    this.mutationRate = mutationRate;
+  public GeneticNeuralNetwork addLayer(Layer layer) {
+    super.addLayer(layer);
     return this;
   }
 
   public void reset() {
     super.reset();
     this.fitness = 0.0;
+  }
+
+  public GeneticNeuralNetwork setMutationRate(float mutationRate) {
+    this.mutationRate = mutationRate;
+    return this;
+  }
+
+  public float getFitness() {
+    return this.fitness;
+  }
+
+  public void setFitness(float fitness) {
+    this.fitness = fitness;
   }
 
   public void mutate() {
@@ -165,6 +190,7 @@ class GeneticNeuralNetwork extends SequentialNeuralNetwork {
 
   public JSONObject toJSON() {
     JSONObject json = super.toJSON();
+    json.setFloat("mutationRate", this.mutationRate);
     json.setFloat("fitness", this.fitness);
     return json;
   }
@@ -185,39 +211,59 @@ class GeneticNeuralNetwork extends SequentialNeuralNetwork {
 }
 
 class Layer {
+  int index;
+  float biasRate;
   Matrix weights;
   Matrix bias;
-  Matrix gradients;
+  Matrix gradientWeights;
+  Matrix gradientBias;
   ActivationFunction activation;
-  InitializerFunction initializer;
+  InitializerFunction initializer; 
   boolean normalize;
 
   public Layer(int inputUnits, int units) {
+    this.index = -1;
+    this.biasRate = 1.0;
     this.weights = new Matrix(units, inputUnits);
     this.bias = new Matrix(units, 1);
-    this.gradients = new Matrix(units, 1);
+    this.normalize = false;
+
+    this.gradientWeights = new Matrix(this.weights.rows, this.weights.cols);
+    this.gradientBias = new Matrix(this.bias.rows, 1);
     this.activation = new LinearActivation();
     this.initializer = new GlorotUniformInitializer();
+
     this.initializer.apply(this);
-    this.normalize = false;
   }
 
   public Layer(JSONObject json) {
+    this.index = json.getInt("index");
+    this.biasRate = json.getFloat("biasRate");
     this.weights = new Matrix(json.getJSONObject("weights"));
     this.bias = new Matrix(json.getJSONObject("bias"));
-    this.gradients = new Matrix(json.getJSONObject("gradients")); 
+    this.normalize = json.getBoolean("normalize");
+
+    this.gradientWeights = new Matrix(this.weights.rows, this.weights.cols);
+    this.gradientBias = new Matrix(this.bias.rows, 1);
     this.activation = new LinearActivation();
     this.initializer = new GlorotUniformInitializer();
-    this.normalize = false;
+
+    this.initializer.apply(this);
   }
 
   private Layer(Layer parent) {
+    this.index = parent.index;
+    this.biasRate = parent.biasRate;
     this.weights = parent.weights.copy();
     this.bias = parent.bias.copy();
-    this.gradients = parent.gradients.copy();
+    this.normalize = parent.normalize;
+
+    this.gradientWeights = new Matrix(this.weights.rows, this.weights.cols);
+    this.gradientBias = new Matrix(this.bias.rows, 1);
     this.activation = parent.activation;
     this.initializer = parent.initializer;
-    this.normalize = parent.normalize;
+
+    this.initializer.apply(this);
   }
 
   public Layer setActivation(ActivationFunction activation) {
@@ -228,6 +274,11 @@ class Layer {
   public Layer setInitializer(InitializerFunction initializer) {
     this.initializer = initializer;
     this.initializer.apply(this);
+    return this;
+  }
+
+  public Layer setBiasRate(float biasRate) {
+    this.biasRate = biasRate;
     return this;
   }
 
@@ -250,10 +301,15 @@ class Layer {
 
   public void reset() {
     this.initializer.apply(this);
-    this.gradients.zero();
+    this.zeroGradients();
   }
 
-  public void adjustWeight(Matrix delta) {
+  public void zeroGradients() {
+    this.gradientWeights.zero();
+    this.gradientBias.zero();
+  }
+
+  public void adjustWeights(Matrix delta) {
     this.weights.sub(delta);
     if (this.normalize) {
       this.weights.batchNorm(1.0, 0.0);
@@ -269,8 +325,10 @@ class Layer {
 
   public JSONObject toJSON() {
     JSONObject json = new JSONObject();
+    json.setInt("index", this.index);
+    json.setFloat("biasRate", this.biasRate);
+    json.setBoolean("normalize", this.normalize);
     json.setJSONObject("weights", this.weights.toJSON());
-    json.setJSONObject("gradients", this.gradients.toJSON());
     json.setJSONObject("bias", this.bias.toJSON());
     return json;
   }
@@ -284,7 +342,6 @@ class GlorotUniformInitializer implements InitializerFunction {
   public void apply(Layer layer) {
     layer.weights.randomize(sqrt(6.0 / sqrt(layer.weights.rows + layer.weights.cols)));
     layer.bias.zero(); //randomize(1.0 / sqrt(layer.bias.rows + layer.bias.cols));
-    layer.gradients.zero();
   }
 }
 
@@ -292,7 +349,6 @@ class LecunUniformInitializer implements InitializerFunction {
   public void apply(Layer layer) {
     layer.weights.randomize(sqrt(6.0 / sqrt(layer.weights.rows)));
     layer.bias.zero(); //randomize(1.0 / sqrt(layer.bias.rows));
-    layer.gradients.zero();
   }
 }
 
@@ -300,29 +356,11 @@ class HeUniformInitializer implements InitializerFunction {
   public void apply(Layer layer) {
     layer.weights.randomize(sqrt(3.0 / sqrt(layer.weights.rows)));
     layer.bias.zero(); //randomize(2.0 / sqrt(layer.bias.rows));
-    layer.gradients.zero();
   }
 }
 
 interface LearningRateScheduler {
   void apply(Optimizer optimizer, int epoch);
-}
-
-class TimeBasedScheduler implements LearningRateScheduler {
-  float decay;
-  int step;
-  float minRate;
-
-  public TimeBasedScheduler(float decay, int step, float minRate) {
-    this.decay = decay;
-    this.step = step;
-    this.minRate = minRate;
-  }
-
-  public void apply(Optimizer optimizer, int epoch) {
-    int a = epoch / this.step;
-    optimizer.learningRate = max(this.minRate, optimizer.learningRate0 / (1.0 + this.decay * a));
-  }
 }
 
 class ExponentialScheduler implements LearningRateScheduler {
@@ -489,13 +527,37 @@ class SoftmaxActivation implements ActivationFunction {
 }
 
 abstract class LossFunction {
+  NeuralNetwork model;
+
+  public LossFunction compile(NeuralNetwork model) {
+    this.model = model;
+    return this;
+  }
+
   public Matrix computeWeightedLoss(Matrix losses, Matrix weights) {
     return weights.transpose().transform(losses);
+  }
+
+  public void backward(Matrix lossRate) {
+    int output = this.model.layers.size() - 1;
+    lossRate = this.minimize(this.model.layers.get(output), this.model.outputs.get(output), this.model.outputs.get(output + 1), lossRate);
+    
+    for (int hidden = output - 1; hidden >= 0; hidden--) {
+      lossRate = this.computeWeightedLoss(lossRate, this.model.layers.get(hidden + 1).weights);
+      lossRate = this.minimize(this.model.layers.get(hidden), this.model.outputs.get(hidden), this.model.outputs.get(hidden + 1), lossRate);
+    }
   }
 
   abstract public Matrix apply(Matrix output, Matrix target);
 
   abstract public Matrix derivate(Matrix output, Matrix target);
+
+  private Matrix minimize(Layer layer, Matrix input, Matrix output, Matrix lossRate) {
+    Matrix newLossRate = layer.activation.derivate(output, lossRate);
+    layer.gradientWeights.add(newLossRate.transform(input.transpose()));
+    layer.gradientBias.add(newLossRate.copy().mult(layer.biasRate));
+    return newLossRate;
+  }
 }
 
 class MeanSquaredError extends LossFunction {
@@ -541,19 +603,16 @@ class SoftmaxCrossEntropy extends LossFunction {
 }
 
 abstract class Optimizer {
+  NeuralNetwork model;
   LearningRateScheduler learningRateScheduler;
   float learningRate0;
-  float biasRate0;
   float learningRate;
-  float biasRate;
   int epochs;
 
   public Optimizer() {
     this.learningRateScheduler = null;
     this.learningRate0 = 0.001;
     this.learningRate = 0.001;
-    this.biasRate0 = 1.0;
-    this.biasRate = 1.0;
     this.epochs = 0;
   }
 
@@ -568,61 +627,85 @@ abstract class Optimizer {
     return this;
   }
 
-  public Optimizer setBiasRate(float biasRate) {
-    this.biasRate0 = biasRate;
-    this.biasRate = biasRate;
-    return this;
-  }
-
   public void reset() {
     this.learningRate = this.learningRate0;
     this.epochs = 0;
   }
 
-  public void updateEpochs() {
+  public Optimizer compile(NeuralNetwork model) {
+    this.model = model;
+    return this;
+  }
+
+  public void decayLearningRate() {
     this.epochs++;
     if (this.learningRateScheduler != null) {
       this.learningRateScheduler.apply(this, this.epochs);
     }
   }
 
-  public void minimize(Layer layer, Matrix input, Matrix output, Matrix lossRate) {
-    this.computeGradients(layer, output, lossRate);
-    this.applyGradients(layer, input);
+  public void zeroGradients() {
+    for (Layer l : this.model.layers) {
+      l.zeroGradients();
+    }
   }
 
-  abstract public void computeGradients(Layer layer, Matrix output, Matrix lossRate);
-
-  public void applyGradients(Layer layer, Matrix input) {
-    layer.adjustWeight(layer.gradients.transform(input.transpose()));
-    layer.adjustBias(layer.gradients.copy().mult(this.biasRate));
+  public void step() {
+    for (Layer layer : this.model.layers) {
+      this.applyGradients(layer);
+    }
   }
+
+  abstract public void applyGradients(Layer layer);
 }
 
 class OptimizerSgd extends Optimizer {
+  float momentum;
+  Matrix[] velocityWeights;
+  Matrix[] velocityBias;
+
   public OptimizerSgd() {
     super();
+    this.momentum = 0.0;
   }
 
-  public void computeGradients(Layer layer, Matrix output, Matrix lossRate) {
-    layer.gradients.mult(0.0).add(lossRate).mult(this.learningRate);
-  }
-}
-
-class OptimizerMomentum extends Optimizer {
-  float momentum;
-
-  public OptimizerMomentum() {
-    super();
-    this.momentum = 0.9;
-  }
-
-  public OptimizerMomentum setMomentum(float momentum) {
+  public OptimizerSgd setMomentum(float momentum) {
     this.momentum = momentum;
     return this;
   }
 
-  public void computeGradients(Layer layer, Matrix output, Matrix lossRate) {
-    layer.gradients.mult(this.momentum).add(lossRate.copy().mult(this.learningRate * (1.0 - this.momentum)));
+  public void reset() {
+    super.reset();
+
+    for (Layer layer : model.layers) {
+      int i = layer.index;
+      this.velocityWeights[i].zero();
+      this.velocityBias[i].zero();
+    }
+  }
+
+  public Optimizer compile(NeuralNetwork model) {
+    super.compile(model);
+
+    this.velocityWeights = new Matrix[model.layers.size()];
+    this.velocityBias = new Matrix[model.layers.size()];
+
+    for (Layer layer : model.layers) {
+      int i = layer.index;
+      this.velocityWeights[i] = new Matrix(layer.gradientWeights.rows, layer.gradientWeights.cols);
+      this.velocityBias[i] = new Matrix(layer.gradientBias.rows, layer.gradientBias.cols);
+    }
+
+    return this;
+  }
+
+  public void applyGradients(Layer layer) {
+    int i = layer.index;
+
+    this.velocityWeights[i].mult(this.momentum).add(layer.gradientWeights.copy().mult((1.0 - this.momentum) * this.learningRate));
+    this.velocityBias[i].mult(this.momentum).add(layer.gradientBias.copy().mult((1.0 - this.momentum) * this.learningRate));
+    
+    layer.adjustWeights(this.velocityWeights[i]);
+    layer.adjustBias(this.velocityBias[i]);
   }
 }

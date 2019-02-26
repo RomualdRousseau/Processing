@@ -60,10 +60,9 @@ class Matrix {
   public float get(int row, int col) {
     return this.data[row][col];
   }
-
-  public Matrix set(int row, int col, float v) {
+  
+  public void set(int row, int col, float v) {
     this.data[row][col] = v;
-    return this;
   }
 
   public Matrix zero() {
@@ -221,22 +220,22 @@ class Matrix {
     }
     return this;
   }
-
+  
   public Matrix batchNorm(float a, float b) {
     for (int j = 0; j < this.cols; j++) {
       float avg = 0.0;
       for (int i = 0; i < this.rows; i++) {
         avg += this.data[i][j];
       }
-      avg /= this.rows;
-
+      avg /= (float) this.rows;
+      
       float var = 0.0;
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg);
         var += x * x;
       }
-      var /= this.rows;
-
+      var /= (float) this.rows;
+      
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg) / sqrt(var + EPSILON);
         this.data[i][j] = a * x + b;

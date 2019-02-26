@@ -223,14 +223,14 @@ class Matrix {
       for (int i = 0; i < this.rows; i++) {
         avg += this.data[i][j];
       }
-      avg /= this.rows;
+      avg /= (float) this.rows;
       
       float var = 0.0;
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg);
         var += x * x;
       }
-      var /= this.rows;
+      var /= (float) this.rows;
       
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg) / sqrt(var + EPSILON);

@@ -44,26 +44,27 @@ void buildModel() {
     .setInitializer(new GlorotUniformInitializer())
     .setNormalize(false);
     
-  Layer layer2 = new Layer(layer1.getOutputUnits(), 3)
-    .setActivation(new LinearActivation())
-    .setInitializer(new GlorotUniformInitializer())
-    .setNormalize(true);
+  //Layer layer2 = new Layer(layer1.getOutputUnits(), 3)
+  //  .setActivation(new LinearActivation())
+  //  .setInitializer(new GlorotUniformInitializer())
+  //  .setNormalize(true);
 
-  Layer layer3 = new Layer(layer2.getOutputUnits(), 3)
+  Layer layer3 = new Layer(layer1.getOutputUnits(), 3)
     .setActivation(new SoftmaxActivation())
     .setInitializer(new GlorotUniformInitializer())
     .setNormalize(false);
 
-  Optimizer optimizer = new OptimizerMomentum()
-    .setLearningRate(0.001)
-    .setLearningRateScheduler(new ExponentialScheduler(0.001, iterationCount, 0.00001));
+  Optimizer optimizer = new OptimizerSgd()
+    .setMomentum(0.9)
+    .setLearningRate(0.1)
+    .setLearningRateScheduler(new ExponentialScheduler(0.01, iterationCount, 0.001));
 
   LossFunction loss = new SoftmaxCrossEntropy();
 
   model = (GeneticNeuralNetwork) new GeneticNeuralNetwork()
     .setMutationRate(0.1)
     .addLayer(layer1)
-    .addLayer(layer2)
+    //.addLayer(layer2)
     .addLayer(layer3);
   model.compile(loss, optimizer);
 }
@@ -270,5 +271,9 @@ void keyPressed() {
   } else if (key == 'n') {
     println("new training");
     buildTraingAndTestSets();
+    model.optimizer.reset();
+  } else if (key == 's') {
+    println("save model");
+    println(model.toJSON());
   }
 }

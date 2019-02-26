@@ -27,7 +27,8 @@ void setup() {
 
   model.compile(
     new MeanSquaredError(), 
-    new OptimizerMomentum()
+    new OptimizerSgd()
+    .setMomentum(0.9)
     .setLearningRate(0.01)
     .setLearningRateScheduler(new ExponentialScheduler(0.01, 500, 0.001)));
 }
@@ -37,8 +38,8 @@ void draw() {
   final int w = width / r;
   final int h = height / r;
 
-  for (int i = 0; i < 500; i++) { 
-    model.fit(inputs, targets, 4, true);
+  for (int i = 0; i < 500; i++) {
+    model.fit(inputs, targets, 4);
   }
 
   background(0);

@@ -133,7 +133,7 @@ class DQN implements Individual {
       return;
     }
 
-    this.qnetwork.zeroGradients();
+    this.qnetwork.optimizer.zeroGradients();
 
     for (int b = 0; b < BATCH_SIZE; b++) {
       MemorySlot m = this.memoryReplay.pickOne();
@@ -151,10 +151,10 @@ class DQN implements Individual {
       }
 
       Matrix lossRate = this.qnetwork.loss.derivate(output, target);
-      lossRate = this.qnetwork.optimizer.minimize(this.qnetwork.layers.get(1), this.qnetwork.outputs.get(1), this.qnetwork.outputs.get(2), lossRate);
-      lossRate = this.qnetwork.loss.computeWeightedLoss(lossRate, this.qnetwork.layers.get(1).weights);  
-      lossRate = this.qnetwork.optimizer.minimize(this.qnetwork.layers.get(0), this.qnetwork.outputs.get(0), this.qnetwork.outputs.get(1), lossRate);
+      this.qnetwork.loss.backward(lossRate);
     }
+    
+    this.qnetwork.optimizer.step();
 
     this.qnetwork.optimizer.decayLearningRate();
 
@@ -176,7 +176,8 @@ class DQN implements Individual {
       .setInitializer(new GlorotUniformInitializer())
       .setNormalize(false);
 
-    Optimizer optimizer = new OptimizerMomentum()
+    Optimizer optimizer = new OptimizerSgd()
+      .setMomentum(0.9)
       .setLearningRate(LEARNING_RATE_MAX)
       .setLearningRateScheduler(new ExponentialScheduler(LEARNING_RATE_DECAY, EPISODE_DURATION, LEARNING_RATE_MIN));
 
