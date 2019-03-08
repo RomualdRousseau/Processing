@@ -26,11 +26,8 @@ void setup() {
     .setInitializer(new GlorotUniformInitializer()));
 
   model.compile(
-    new MeanSquaredError(), 
-    new OptimizerSgd()
-    .setMomentum(0.9)
-    .setLearningRate(0.01)
-    .setLearningRateScheduler(new ExponentialScheduler(0.01, 500, 0.001)));
+    new Huber(), 
+    new OptimizerRMSProp());
 }
 
 void draw() {
@@ -39,7 +36,7 @@ void draw() {
   final int h = height / r;
 
   for (int i = 0; i < 500; i++) {
-    model.fit(inputs, targets, 4);
+    model.fit(inputs, targets, 4, true);
   }
 
   background(0);

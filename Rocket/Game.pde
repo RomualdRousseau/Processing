@@ -1,6 +1,6 @@
 class Game implements BaseGame {
   Target target = new Target(50);
-  Barrier barrier = null; //new Barrier();
+  Barrier barrier = new Barrier();
   Hero hero = new Hero();
   boolean gameOver = false;
   float reward = 0;

@@ -1,4 +1,4 @@
-class FloatVector
+class FloatVector implements Comparable
 {
   public FloatVector(float[] data) {
     this.data = data;
@@ -11,6 +11,10 @@ class FloatVector
       result &= other.data[i] == data[i];
     }
     return result;
+  }
+  
+  public int compareTo(Object obj) {
+    return 0;
   }
   
   public FloatVector copy() {

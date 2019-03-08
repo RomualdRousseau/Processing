@@ -182,6 +182,15 @@ class Matrix {
     }
     return this;
   }
+  
+  public Matrix pow(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] = (float) Math.pow(this.data[i][j], n);
+      }
+    }
+    return this;
+  }
 
   public Matrix map(MatrixFunction<Float, Float> fn) {
     if (fn == null) {

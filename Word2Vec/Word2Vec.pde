@@ -46,7 +46,7 @@ void setup() {
   wordVector.printSorted(lexicalItems);
   println();
   
-  String s = "customer num";
+  String s = "cast. num";
   FloatVector vector = wordVector.vectorize(s, lexicalItems).normalize();
 
   FloatVector found = wordVector.closest(vector);

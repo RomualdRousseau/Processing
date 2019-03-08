@@ -95,16 +95,16 @@ class SequentialNeuralNetwork extends NeuralNetwork {
     if (inputs.length != targets.length) {
       throw new IllegalArgumentException("Inputs and Targets must have same number of elements");
     }
-
-    if(shuffle) {
+    
+    if (shuffle) {
       Matrix temp;
-      for(int i = inputs.length - 1; i > 0; i--) {
+      for (int i = inputs.length - 1; i > 0; i--) {
         int j = floor(random(0, i + 1));
-        
+
         temp = inputs[j];
         inputs[j] = inputs[i];
         inputs[i] = temp;
-        
+
         temp = targets[j];
         targets[j] = targets[i];
         targets[i] = temp;
@@ -112,7 +112,7 @@ class SequentialNeuralNetwork extends NeuralNetwork {
     }
     
     Matrix sum = new Matrix(this.layers.get(this.layers.size() - 1).weights.rows, 1);
-    
+
     for (int t = 0; t < inputs.length; t += batchSize) {
       this.optimizer.zeroGradients();
 
@@ -312,14 +312,14 @@ class Layer {
   public void adjustWeights(Matrix delta) {
     this.weights.sub(delta);
     if (this.normalize) {
-      this.weights.batchNorm(1.0, 0.0);
+      this.weights.l2Norm();
     }
   }
 
   public void adjustBias(Matrix delta) {
     this.bias.sub(delta);
     if (this.normalize) {
-      this.bias.batchNorm(1.0, 0.0);
+      this.bias.l2Norm();
     }
   }
 
@@ -530,7 +530,7 @@ abstract class LossFunction {
   NeuralNetwork model;
 
   abstract public LossFunction clone();
-  
+
   public LossFunction compile(NeuralNetwork model) {
     this.model = model;
     return this;
@@ -544,13 +544,13 @@ abstract class LossFunction {
     ArrayList<Layer> layers =  this.model.layers;
     ArrayList<Matrix> outputs = this.model.outputs;
     int output = layers.size() - 1;
-    
-    if(outputs.size() < layers.size() + 1) {
+
+    if (outputs.size() < layers.size() + 1) {
       throw new IllegalArgumentException("Predict should run before backward");
     }
-    
+
     lossRate = this.minimize(layers.get(output), outputs.get(output), outputs.get(output + 1), lossRate);
-    
+
     for (int hidden = output - 1; hidden >= 0; hidden--) {
       lossRate = this.computeWeightedLoss(lossRate, layers.get(hidden + 1).weights);
       lossRate = this.minimize(layers.get(hidden), outputs.get(hidden), outputs.get(hidden + 1), lossRate);
@@ -573,12 +573,12 @@ class MeanSquaredError extends LossFunction {
   public LossFunction clone() {
     return new MeanSquaredError();
   }
-  
+
   public Matrix apply(Matrix output, Matrix target) {
     final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
       public final Float apply(Float y, int row, int col, Matrix output) {
-        float a = output.get(row, col);
-        return 0.5 * (y - a) * (y - a);
+        float a = y - output.get(row, col);
+        return 0.5 * a * a;
       }
     };
     return target.copy().map(fn, output);
@@ -589,11 +589,47 @@ class MeanSquaredError extends LossFunction {
   }
 }
 
+class Huber extends LossFunction {
+  public LossFunction clone() {
+    return new Huber();
+  }
+
+  public Matrix apply(Matrix output, Matrix target) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix output) {
+        float a = y - output.get(row, col);
+        if (abs(a) <= 1) {
+          return 0.5 * a * a;
+        } else {
+          return abs(a) - 0.5;
+        }
+      }
+    };
+    return target.copy().map(fn, output);
+  }
+
+  public Matrix derivate(Matrix output, Matrix target) {
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix target) {
+        float a = y - target.get(row, col);
+        if (a < -1.0) {
+          return -1.0;
+        } else if (a <= 1.0) {
+          return a;
+        } else {
+          return 1.0;
+        }
+      }
+    };
+    return output.copy().map(fn, target);
+  }
+}
+
 class SoftmaxCrossEntropy extends LossFunction {
   public LossFunction clone() {
     return new SoftmaxCrossEntropy();
   }
-  
+
   public Matrix apply(Matrix output, Matrix target) {
     final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
       public final Float apply(Float y, int row, int col, Matrix output) {
@@ -672,7 +708,7 @@ abstract class Optimizer {
       this.applyGradients(layer);
     }
   }
-  
+
   abstract public Optimizer clone();
 
   abstract public void applyGradients(Layer layer);
@@ -717,7 +753,7 @@ class OptimizerSgd extends Optimizer {
 
     return this;
   }
-  
+
   public Optimizer clone() {
     return new OptimizerSgd().setMomentum(this.momentum);
   }
@@ -727,8 +763,71 @@ class OptimizerSgd extends Optimizer {
 
     this.velocityWeights[i].mult(this.momentum).add(layer.gradientWeights.copy().mult((1.0 - this.momentum) * this.learningRate));
     this.velocityBias[i].mult(this.momentum).add(layer.gradientBias.copy().mult((1.0 - this.momentum) * this.learningRate));
-    
+
     layer.adjustWeights(this.velocityWeights[i]);
     layer.adjustBias(this.velocityBias[i]);
+  }
+}
+
+class OptimizerRMSProp extends Optimizer {
+  float momentum;
+  Matrix[] cacheWeights;
+  Matrix[] cacheBias;
+
+  public OptimizerRMSProp() {
+    super();
+    this.momentum = 0.9;
+  }
+
+  public OptimizerRMSProp setMomentum(float momentum) {
+    this.momentum = momentum;
+    return this;
+  }
+
+  public void reset() {
+    super.reset();
+
+    for (Layer layer : model.layers) {
+      int i = layer.index;
+      this.cacheWeights[i].zero();
+      this.cacheBias[i].zero();
+    }
+  }
+
+  public Optimizer compile(NeuralNetwork model) {
+    super.compile(model);
+
+    this.cacheWeights = new Matrix[model.layers.size()];
+    this.cacheBias = new Matrix[model.layers.size()];
+
+    for (Layer layer : model.layers) {
+      int i = layer.index;
+      this.cacheWeights[i] = new Matrix(layer.gradientWeights.rows, layer.gradientWeights.cols);
+      this.cacheBias[i] = new Matrix(layer.gradientBias.rows, layer.gradientBias.cols);
+    }
+
+    return this;
+  }
+
+  public Optimizer clone() {
+    return new OptimizerRMSProp().setMomentum(this.momentum);
+  }
+
+  public void applyGradients(Layer layer) {
+    final int i = layer.index;
+    final float learningRate = this.learningRate;
+    
+    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
+      public final Float apply(Float y, int row, int col, Matrix cache) {
+        float a = cache.get(row, col);
+        return y * learningRate / sqrt(a + EPSILON);
+      }
+    };
+
+    this.cacheWeights[i].mult(this.momentum).add(layer.gradientWeights.copy().pow(2.0).mult((1.0 - this.momentum)));
+    this.cacheBias[i].mult(this.momentum).add(layer.gradientBias.copy().pow(2.0).mult((1.0 - this.momentum)));
+
+    layer.adjustWeights(layer.gradientWeights.copy().map(fn, this.cacheWeights[i]));
+    layer.adjustBias(layer.gradientBias.copy().map(fn, this.cacheBias[i]));
   }
 }

@@ -131,15 +131,19 @@ class DQN implements Individual {
 
     this.memoryReplay.add(s, a, this.game.getReward(), this.game.getState(), this.game.isGameOver());
 
-    if (this.memoryReplay.size() < BATCH_SIZE) {
+    if (this.memoryReplay.size() < this.memoryReplaySize) {
       return;
     }
-
+    
     this.qnetwork.optimizer.zeroGradients();
 
-    for (int b = 0; b < BATCH_SIZE; b++) {
-      MemorySlot m = this.memoryReplay.pickOne();
+    int[] batch = this.memoryReplay.pickSample(BATCH_SIZE);
+    
+    for (int b = 0; b < batch.length; b++) {
+      MemorySlot m = this.memoryReplay.slots.getData(batch[b]);
 
+      Matrix output_1 = this.qnetwork.predict(new Matrix(m.s_1));
+      
       Matrix output = this.qnetwork.predict(new Matrix(m.s));
 
       Matrix target = output.copy();
@@ -148,12 +152,15 @@ class DQN implements Individual {
       } else {
         Matrix q_a_s_1 = this.qtarget.predict(new Matrix(m.s_1));
         //float maxQ = q_a_s_1.get(q_a_s_1.argmax(0), 0);
-        float maxQ = q_a_s_1.get(output.argmax(0), 0);
+        float maxQ = q_a_s_1.get(output_1.argmax(0), 0);
         target.set(m.a, 0, m.reward + DISCOUNT_RATE * maxQ);
       }
+      float error = abs(output.get(m.a, 0) - target.get(m.a, 0));
       
       Matrix lossRate = this.qnetwork.loss.derivate(output, target);
       this.qnetwork.loss.backward(lossRate);
+
+      this.memoryReplay.update(batch[b], error);
     }
     
     this.qnetwork.optimizer.step();
@@ -169,7 +176,7 @@ class DQN implements Individual {
 
   public GeneticNeuralNetwork buildModel(int qnetworkHiddenCount) {
     Layer layer1 = new Layer(game.getStateCount(), qnetworkHiddenCount)
-      .setActivation(new TanhActivation())
+      .setActivation(new ReluActivation())
       .setInitializer(new GlorotUniformInitializer())
       .setNormalize(false);
 
@@ -178,12 +185,9 @@ class DQN implements Individual {
       .setInitializer(new GlorotUniformInitializer())
       .setNormalize(false);
 
-    Optimizer optimizer = new OptimizerSgd()
-      .setMomentum(0.9)
-      .setLearningRate(LEARNING_RATE_MAX)
-      .setLearningRateScheduler(new ExponentialScheduler(LEARNING_RATE_DECAY, EPISODE_DURATION, LEARNING_RATE_MIN));
+    Optimizer optimizer = new OptimizerRMSProp();
 
-    LossFunction loss = new MeanSquaredError();
+    LossFunction loss = new Huber();
 
     GeneticNeuralNetwork model = (GeneticNeuralNetwork) new GeneticNeuralNetwork()
       .setMutationRate(0.1)

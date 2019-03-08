@@ -1,13 +1,13 @@
 static final int EPISODE_DURATION = 1000;
 static final int EPISODE_MAX = 1000;
 static final float DISCOUNT_RATE = 0.95;
-static final int BATCH_SIZE = 64;
+static final int BATCH_SIZE = 32;
 static final float GREEDY_MAX = 1.0;
-static final float GREEDY_MIN = 0.05;
-static final float GREEDY_DECAY = 0.018;
-static final float LEARNING_RATE_MAX = 0.1;
+static final float GREEDY_MIN = 0.1;
+static final float GREEDY_DECAY = 0.00018;
+static final float LEARNING_RATE_MAX = 0.001;
 static final float LEARNING_RATE_MIN = 0.001;
-static final float LEARNING_RATE_DECAY = 0.018;
+static final float LEARNING_RATE_DECAY = 0.0018;
 static final float MUTATION_RATE = 0.1;
 static final int POPULATION_SIZE = 100;
 static final int GENERATION_SIZE = 100;
@@ -35,12 +35,13 @@ void draw() {
     oneDQN.learn();
   }
 
-  println(String.format("%d %f %f %d %d", 
+  println(String.format("%d %f %f %d %d %f", 
     oneDQN.episodeCount, 
     oneDQN.greedyRate, 
     oneDQN.qnetwork.optimizer.learningRate, 
     oneDQN.episodeCount, 
-    floor(oneDQN.getFitness())));
+    floor(oneDQN.getFitness()),
+    oneDQN.memoryReplay.slots.total()));
 
   background(51);
   oneDQN.game.show();

@@ -170,15 +170,6 @@ class Matrix {
     }
     return this;
   }
-  
-  public Matrix pow(float n) {
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = (float) Math.pow(this.data[i][j], n);
-      }
-    }
-    return this;
-  }
 
   public Matrix div(Matrix m) {
     if (this.rows != m.rows || this.cols != m.cols) {
@@ -187,6 +178,15 @@ class Matrix {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
         this.data[i][j] /= m.data[i][j];
+      }
+    }
+    return this;
+  }
+  
+  public Matrix pow(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        this.data[i][j] = (float) Math.pow(this.data[i][j], n);
       }
     }
     return this;
@@ -289,7 +289,27 @@ class Matrix {
     }
     return result;
   }
-
+  
+  public float min(int col) {
+    float minValue = this.data[0][col];
+    for (int i = 1; i < this.rows; i++) {
+      if (this.data[i][col] < minValue) {
+        minValue = this.data[i][col];
+      }
+    }
+    return minValue;
+  }
+  
+  public float max(int col) {
+    float maxValue = this.data[0][col];
+    for (int i = 1; i < this.rows; i++) {
+      if (this.data[i][col] > maxValue) {
+        maxValue = this.data[i][col];
+      }
+    }
+    return maxValue;
+  }
+  
   public int argmax(int col) {
     int result = 0;
     float maxValue = this.data[0][col];

@@ -39,10 +39,10 @@ public void loadDataSet(String fileName) throws IOException {
 }
 
 void buildModel() {
-  Layer layer1 = new Layer(4, 8)
-    .setActivation(new TanhActivation())
+  Layer layer1 = new Layer(4, 64)
+    .setActivation(new ReluActivation())
     .setInitializer(new GlorotUniformInitializer())
-    .setNormalize(false);
+    .setNormalize(true);
     
   //Layer layer2 = new Layer(layer1.getOutputUnits(), 3)
   //  .setActivation(new LinearActivation())
@@ -54,10 +54,7 @@ void buildModel() {
     .setInitializer(new GlorotUniformInitializer())
     .setNormalize(false);
 
-  Optimizer optimizer = new OptimizerSgd()
-    .setMomentum(0.9)
-    .setLearningRate(0.1)
-    .setLearningRateScheduler(new ExponentialScheduler(0.01, iterationCount, 0.001));
+  Optimizer optimizer = new OptimizerRMSProp();
 
   LossFunction loss = new SoftmaxCrossEntropy();
 
@@ -72,7 +69,7 @@ void buildModel() {
 void buildTraingAndTestSets() {
   // Partition the data: 80% training, 20% test
   shuffle(fisherSet);
-  int p = floor(fisherSet.size() * 0.8);
+  int p = floor(fisherSet.size() * 0.7);
   ArrayList<Float[]> training = subset(fisherSet, 0, p);
   ArrayList<Float[]> test = subset(fisherSet, p, fisherSet.size());
 
@@ -132,7 +129,7 @@ void draw() {
 
   float error = 0.0;
   for (int i = 0; i < iterationCount; i++) {
-    error += model.fit(trainingInputs, trainingTargets, 64, false).flatten(0);
+    error += model.fit(trainingInputs, trainingTargets, 64, true).flatten(0);
   }
   error /= iterationCount;
 
@@ -143,28 +140,23 @@ void draw() {
 
   strokeWeight(4);
   for (int i = 0; i < trainingInputs.length; i++) {
-    float x = map(trainingInputs[i].data[0][0], 0, 1.0, 1, width / 2 - 1);
-    float y = map(trainingInputs[i].data[1][0], 0, 1.0, height / 2 - 1, 1);
     float c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
     stroke(c, 100, 100);
+    
+    float x = map(trainingInputs[i].data[0][0], 0, 1.0, 1, width / 2 - 1);
+    float y = map(trainingInputs[i].data[1][0], 0, 1.0, height / 2 - 1, 1);
     point(x, y);
 
     x = map(trainingInputs[i].data[0][0], 0, 1.0, width / 2 + 1, width - 1);
     y = map(trainingInputs[i].data[2][0], 0, 1.0, height / 2 - 1, 1);
-    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
-    stroke(c, 100, 100);
     point(x, y);
 
     x = map(trainingInputs[i].data[1][0], 0, 1.0, width / 2 + 1, width);
     y = map(trainingInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
-    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
-    stroke(c, 100, 100);
     point(x, y);
 
     x = map(trainingInputs[i].data[2][0], 0, 1.0, 1, width / 2 - 1);
     y = map(trainingInputs[i].data[3][0], 0, 1.0, height - 1, height / 2 + 1);
-    c = map(trainingTargets[i].argmax(0), 0, 3, 0, 360);
-    stroke(c, 100, 100);
     point(x, y);
   }
 
