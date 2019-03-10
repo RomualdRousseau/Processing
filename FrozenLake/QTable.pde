@@ -1,49 +1,47 @@
-static final float GREEDY_MIN = 0.05;
-static final float GREEDY_DECAY = 0.002;
-static final float LEARNING_RATE = 0.8;
-static final float DISCOUNT_RATE = 0.95;
-
-class QTable {
-  BaseGame game;
+class QTable extends RL {
   Matrix qtable;
-  float greedyRate;
+  int currState;
 
   QTable(BaseGame game) {
-    this.game = game;
-    this.qtable = new Matrix(game.getActionCount(), game.getStateCount());
-    this.greedyRate = 1.0;
+    super(game);
+    this.qtable = new Matrix(game.getActionCount(), TILE_NUM * TILE_NUM);
+    this.reset();
   }
 
-  void startNewEpisode(int episodeCount) {
-    this.greedyRate = max(GREEDY_MIN, this.greedyRate * exp(-GREEDY_DECAY));
-    this.game.reset(episodeCount);
+  void reset() {
+    this.currState = normalizeState(this.game.getState());
   }
 
-  int predict(int s) {
+  int predict() {
     if (random(1.0) < this.greedyRate) {
       return floor(random(this.game.getActionCount()));
     } else {
-      return this.qtable.argmax(s);
+      return this.qtable.argmax(this.currState);
     }
   }
+
+  void fit(float[] state, float reward, int a) {
+    int newState = normalizeState(state);
+    float v_0 = this.qtable.get(a, this.currState);
+    float v_1 = this.qtable.max(newState);
+    this.qtable.set(a, currState, v_0 + LEARNING_RATE * (r_plus_ds(reward, v_1) - v_0));
+    this.currState = newState;
+  }
   
-  void run() {
-    int s = argmax(game.getState());
-    int a = this.predict(s);    
-    this.game.step(a);
-    this.fit(s, a);
+  int normalizeState(float[] state) {
+    return floor(state[0] + state[1] * TILE_NUM);
   }
+}
 
-  void learn() {
-    int s = argmax(game.getState());
-    int a = this.predict(s);    
-    this.game.step(a);
-    this.fit(s, a);
-  }
+void trainWithQTable(BaseGame game) {
+  score = 0;
+  rl = new QTable(game);
 
-  void fit(int s, int a) {
-    int s_1 = argmax(this.game.getState());
-    float r = this.game.getReward();
-    this.qtable.set(a, s, this.qtable.get(a, s) + LEARNING_RATE * (r + DISCOUNT_RATE * this.qtable.max(s_1) - this.qtable.get(a, s)));
+  for (int e = 0; e < EPISODE_NUM; e++) {
+    rl.restart(); 
+    while(!rl.game.isDone()) {
+      rl.learn();
+    }
+    score = max(score, score + int(rl.game.getReward()));
   }
 }

@@ -5,6 +5,7 @@ float step = 1.0;
 
 void setup() {
   size(800, 800);
+  //background(51);
 }
 
 void draw() {

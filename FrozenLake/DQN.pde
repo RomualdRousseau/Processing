@@ -1,17 +1,15 @@
-interface BaseGame {
-  int getActionCount();
+class DQN extends RL {
+  DQN(BaseGame game) {
+    super(game);
+  }
+  
+  void reset() {
+  }
 
-  int getStateCount();
+  int predict() {
+    return 0;
+  }
 
-  float[] getState();
-
-  float getReward();
-
-  boolean isDone();
-
-  void reset(int episode);
-
-  void step(int a);
-
-  void render();
+  void fit(float[] nextState, float reward, int a) {
+  }
 }

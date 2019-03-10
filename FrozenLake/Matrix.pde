@@ -8,7 +8,7 @@ class Matrix {
   int rows;
   int cols;
   float[][] data;
-
+  
   public Matrix(int rows, int cols) {
     this.rows = rows;
     this.cols = cols;
@@ -63,6 +63,46 @@ class Matrix {
   
   public void set(int row, int col, float v) {
     this.data[row][col] = v;
+  }
+  
+  public float min(int col) {
+    float minValue = this.data[0][col];
+    for (int i = 1; i < this.rows; i++) {
+      if (this.data[i][col] < minValue) {
+        minValue = this.data[i][col];
+      }
+    }
+    return minValue;
+  }
+  
+  public float max(int col) {
+    float maxValue = this.data[0][col];
+    for (int i = 1; i < this.rows; i++) {
+      if (this.data[i][col] > maxValue) {
+        maxValue = this.data[i][col];
+      }
+    }
+    return maxValue;
+  }
+  
+  public int argmax(int col) {
+    int result = 0;
+    float maxValue = this.data[0][col];
+    for (int i = 1; i < this.rows; i++) {
+      if (this.data[i][col] > maxValue) {
+        maxValue = this.data[i][col];
+        result = i;
+      }
+    }
+    return result;
+  }
+
+  public float flatten(int col) {
+    float sum = 0.0;
+    for (int i = 0; i < this.rows; i++) {
+      sum += this.data[i][col];
+    }
+    return sum;
   }
 
   public Matrix zero() {
@@ -289,46 +329,6 @@ class Matrix {
     }
     return result;
   }
-  
-  public float min(int col) {
-    float minValue = this.data[0][col];
-    for (int i = 1; i < this.rows; i++) {
-      if (this.data[i][col] < minValue) {
-        minValue = this.data[i][col];
-      }
-    }
-    return minValue;
-  }
-  
-  public float max(int col) {
-    float maxValue = this.data[0][col];
-    for (int i = 1; i < this.rows; i++) {
-      if (this.data[i][col] > maxValue) {
-        maxValue = this.data[i][col];
-      }
-    }
-    return maxValue;
-  }
-  
-  public int argmax(int col) {
-    int result = 0;
-    float maxValue = this.data[0][col];
-    for (int i = 1; i < this.rows; i++) {
-      if (this.data[i][col] > maxValue) {
-        maxValue = this.data[i][col];
-        result = i;
-      }
-    }
-    return result;
-  }
-
-  public float flatten(int col) {
-    float sum = 0.0;
-    for (int i = 0; i < this.rows; i++) {
-      sum += this.data[i][col];
-    }
-    return sum;
-  }
 
   public JSONObject toJSON() {
     JSONArray jsonData = new JSONArray();
@@ -346,17 +346,19 @@ class Matrix {
     return json;
   }
 
-  public void print2() {
+  public String toString() {
+    StringBuilder result = new StringBuilder();
     for (int i = 0; i < this.rows; i++) {
-      print("| ");
+      result.append("| ");
       for (int j = 0; j < this.cols; j++) {
         if (j == this.cols - 1) {
-          print(String.format("%.5f", this.data[i][j]));
+          result.append(String.format("%.5f", this.data[i][j]));
         } else {
-          print(String.format("%.5f\t", this.data[i][j]));
+          result.append(String.format("%.5f\t", this.data[i][j]));
         }
       }
-      println(" |");
+      result.append(" |").append(System.lineSeparator());
     }
+    return result.toString();
   }
 }

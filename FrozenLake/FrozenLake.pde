@@ -1,49 +1,46 @@
-static final int EPISODE_NUM = 2000;
+static final int EPISODE_NUM = 1000;
+static final int POPULATION_NUM = 1000;
+static final int STEP_NUM = 2000;
 
-QTable q;
-int episodeCount = 0;
-int score = 0;
+int score;
+RL rl;
+int state = 0;
+int step = 0;
 
 void setup() {
   size(800, 800, P3D);
   textSize(32);
-  q = new QTable(new Game());
+  frameRate(10);
 }
 
 void draw() {
-  background(0xBC, 0xE8, 0xFF);
-  q.game.render();
-  fill(0);
-  textSize(32);
-  text(String.format("%d        %d", score, episodeCount), width / 4, 40);
+  switch(state) {
+  case 0:
+    trainWithQMutable(new Game());
+    state = 1;
+    break;
+    
+  case 1:
+    rl.game.render();
 
-  if (episodeCount < EPISODE_NUM) {
-    for (int n = 0; n < 500 && episodeCount < EPISODE_NUM; n++) {
-      if (q.game.isDone()) {
-        score = max(score, score + (int) q.game.getReward());
-        episodeCount++;
-        if (episodeCount >= EPISODE_NUM) {
-          frameRate(10);
-        }
-        q.startNewEpisode(episodeCount);
-      } else {
-        q.learn();
-      }
-    }
-  } else {
-    if (q.game.isDone()) {
-      q.startNewEpisode(episodeCount);
-    } else {
-      q.run();
-    }
+    fill(0);
+    textSize(32);
+    text(score, width / 4, 40);
+
+    //textSize(16);
+    //text("Press 'R' to generate a new board", 8, height - 8);
+
+    mainloop();
+    break;
   }
 }
 
-void keyPressed() {
-  if(key == 'r') {
-    frameRate(60);
-    episodeCount = 0;
-    score = 0;
-    q = new QTable(new Game());
+void mainloop() {
+  if (rl.game.isDone() || step >= STEP_NUM) {
+    rl.restart();
+    step = 0;
+  } else {
+    rl.run();
+    step++;
   }
 }
