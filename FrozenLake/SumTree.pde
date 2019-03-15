@@ -1,14 +1,14 @@
-class SumTree {
+class SumTree<T> {
   int capacity;
   float[] tree;
-  MemorySlot[] data;
+  T[] data;
   int write;
   int size;
 
-  SumTree(int capacity) {
-    this.capacity = capacity;
-    this.tree = new float[2 * capacity - 1];
-    this.data = new MemorySlot[capacity];
+  SumTree(T[] data) {
+    this.capacity = data.length;
+    this.tree = new float[2 * data.length - 1];
+    this.data = data;
     this.write = 0;
     this.size = 0;
   }
@@ -20,8 +20,16 @@ class SumTree {
   float total() {
     return this.tree[0];
   }
+  
+  int get(float p) {
+    return this.retrieve(0, p);
+  }
+  
+  T getData(int i) {
+    return this.data[i - this.capacity + 1];
+  }
 
-  void add(float p, MemorySlot data) {
+  void add(float p, T data) {
     int i = this.write + this.capacity - 1;
 
     this.data[this.write] = data;
@@ -41,14 +49,6 @@ class SumTree {
     float change = p - this.tree[i];
     this.tree[i] = p;
     this.propagate(i, change);
-  }
-
-  int get(float p) {
-    return this.retrieve(0, p);
-  }
-  
-  MemorySlot getData(int i) {
-    return this.data[i - this.capacity + 1];
   }
 
   int retrieve(int i, float p) {

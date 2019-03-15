@@ -7,10 +7,10 @@ class MemorySlot {
 }
 
 class MemoryReplay {
-  SumTree slots;
+  SumTree<MemorySlot> slots;
 
   MemoryReplay(int memoryReplaySize) {
-    this.slots = new SumTree(memoryReplaySize);
+    this.slots = new SumTree<MemorySlot>(new MemorySlot[memoryReplaySize]);
   }
 
   int size() {

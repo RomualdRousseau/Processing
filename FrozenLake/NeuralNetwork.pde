@@ -137,7 +137,8 @@ class SequentialNeuralNetwork extends NeuralNetwork {
 class GeneticNeuralNetwork extends SequentialNeuralNetwork implements Individual {
   float mutationRate;
   float fitness;
-
+  float probability;
+  
   public GeneticNeuralNetwork() {
     super();
     this.mutationRate = 0.1;
@@ -181,6 +182,14 @@ class GeneticNeuralNetwork extends SequentialNeuralNetwork implements Individual
 
   public void setFitness(float fitness) {
     this.fitness = fitness;
+  }
+  
+  public float getProbability() {
+    return this.probability;
+  }
+
+  public void setProbability(float probability) {
+    this.probability = probability;
   }
   
   public void mutate() {
@@ -825,8 +834,8 @@ class OptimizerRMSProp extends Optimizer {
       }
     };
 
-    this.cacheWeights[i].mult(this.momentum).add(layer.gradientWeights.copy().pow(2.0).mult((1.0 - this.momentum)));
-    this.cacheBias[i].mult(this.momentum).add(layer.gradientBias.copy().pow(2.0).mult((1.0 - this.momentum)));
+    this.cacheWeights[i].mult(this.momentum).add(layer.gradientWeights.copy().pow(2.0).mult(1.0 - this.momentum));
+    this.cacheBias[i].mult(this.momentum).add(layer.gradientBias.copy().pow(2.0).mult(1.0 - this.momentum));
 
     layer.adjustWeights(layer.gradientWeights.copy().map(fn, this.cacheWeights[i]));
     layer.adjustBias(layer.gradientBias.copy().map(fn, this.cacheBias[i]));

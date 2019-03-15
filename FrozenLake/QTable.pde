@@ -34,7 +34,6 @@ class QTable extends RL {
 }
 
 void trainWithQTable(BaseGame game) {
-  score = 0;
   rl = new QTable(game);
 
   for (int e = 0; e < EPISODE_NUM; e++) {
@@ -42,6 +41,10 @@ void trainWithQTable(BaseGame game) {
     while(!rl.game.isDone()) {
       rl.learn();
     }
-    score = max(score, score + int(rl.game.getReward()));
   }
+  
+  rl.isTrainingMode = false;
+  
+  score = 0;
+  state = 1;
 }
