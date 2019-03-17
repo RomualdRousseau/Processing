@@ -19,3 +19,15 @@ int argmax(float[] v) {
   }
   return result;
 }
+
+float unlerp(float a, float b, float v) {
+  return (v - a) / (b - a);
+}
+
+Matrix xw_plus_b(Matrix input, Matrix weights, Matrix bias) {
+  return weights.transform(input).add(bias);
+}
+
+Matrix diag_mul_b(Matrix a, Matrix b) {
+  return (b.rows != b.cols) ? b.mult(a) : b.transform(a);
+}

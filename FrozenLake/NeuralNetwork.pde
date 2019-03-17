@@ -825,12 +825,12 @@ class OptimizerRMSProp extends Optimizer {
 
   public void applyGradients(Layer layer) {
     int i = layer.index;
-    final float learningRate = this.learningRate;
+    final float lr = this.learningRate;
     
     final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float y, int row, int col, Matrix cache) {
-        float a = cache.get(row, col);
-        return y * learningRate / sqrt(a + EPSILON);
+      public final Float apply(Float m, int row, int col, Matrix cache) {
+        float v = cache.get(row, col);
+        return lr * m / sqrt(v + EPSILON);
       }
     };
 

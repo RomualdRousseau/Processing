@@ -4,23 +4,11 @@ interface MatrixFunction<T, R> {
   R apply(T v, int row, int col, Matrix matrix);
 }
 
-interface ActivationFunc {
-  Matrix apply(Matrix input);
-  
-  Matrix derivate(Matrix output, Matrix lossRate);
-}
-
-interface LossFunc {
-  Matrix apply(Matrix output, Matrix target);
-  
-  Matrix derivate(Matrix output, Matrix target);
-}
-
 class Matrix {
   int rows;
   int cols;
   float[][] data;
-  
+
   public Matrix(int rows, int cols) {
     this.rows = rows;
     this.cols = cols;
@@ -72,11 +60,11 @@ class Matrix {
   public float get(int row, int col) {
     return this.data[row][col];
   }
-  
+
   public void set(int row, int col, float v) {
     this.data[row][col] = v;
   }
-  
+
   public float min(int col) {
     float minValue = this.data[0][col];
     for (int i = 1; i < this.rows; i++) {
@@ -86,7 +74,7 @@ class Matrix {
     }
     return minValue;
   }
-  
+
   public float max(int col) {
     float maxValue = this.data[0][col];
     for (int i = 1; i < this.rows; i++) {
@@ -96,7 +84,7 @@ class Matrix {
     }
     return maxValue;
   }
-  
+
   public int argmax(int col) {
     int result = 0;
     float maxValue = this.data[0][col];
@@ -171,7 +159,7 @@ class Matrix {
 
   public Matrix add(Matrix m) {
     if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cols of A must match rows of B.");
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
     }
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
@@ -183,7 +171,7 @@ class Matrix {
 
   public Matrix sub(Matrix m) {
     if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cols of A must match rows of B.");
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
     }
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
@@ -204,7 +192,7 @@ class Matrix {
 
   public Matrix mult(Matrix m) {
     if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cols of A must match rows of B.");
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
     }
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
@@ -225,7 +213,7 @@ class Matrix {
 
   public Matrix div(Matrix m) {
     if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cols of A must match rows of B.");
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
     }
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
@@ -234,7 +222,7 @@ class Matrix {
     }
     return this;
   }
-  
+
   public Matrix pow(float n) {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
@@ -281,7 +269,7 @@ class Matrix {
     }
     return this;
   }
-  
+
   public Matrix batchNorm(float a, float b) {
     for (int j = 0; j < this.cols; j++) {
       float avg = 0.0;
@@ -289,14 +277,14 @@ class Matrix {
         avg += this.data[i][j];
       }
       avg /= (float) this.rows;
-      
+
       float var = 0.0;
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg);
         var += x * x;
       }
       var /= (float) this.rows;
-      
+
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg) / sqrt(var + EPSILON);
         this.data[i][j] = a * x + b;
@@ -315,6 +303,28 @@ class Matrix {
     return result;
   }
 
+  public Matrix squarify(boolean diagonal) {
+    Matrix result = new Matrix(this.rows, this.rows);
+    if (this.rows == this.cols) {
+      for (int i = 0; i < this.rows; i++) {
+        for (int j = 0; j < this.cols; j++) {
+          result.data[i][j] = this.data[i][j];
+        }
+      }
+    } else if (diagonal) {
+      for (int i = 0; i < this.rows; i++) {
+        result.data[i][i] = this.data[i][0];
+      }
+    } else {
+      for (int i = 0; i < this.rows; i++) {
+        for (int j = 0; j < this.rows; j++) {
+          result.data[i][j] = this.data[i][0];
+        }
+      }
+    }
+    return result;
+  }
+
   public Matrix transpose() {
     Matrix result = new Matrix(this.cols, this.rows);
     for (int i = 0; i < result.rows; i++) {
@@ -324,19 +334,93 @@ class Matrix {
     }
     return result;
   }
-
+  
   public Matrix transform(Matrix m) {
     if (this.cols != m.rows) {
       throw new IllegalArgumentException("cols of A must match rows of B.");
     }
-    Matrix result = new Matrix(this.rows, m.cols);
+    Matrix result = new Matrix(this.rows, m.cols, 0.0);
     for (int i = 0; i < result.rows; i++) {
-      for (int j = 0; j < result.cols; j++) {
-        float sum = 0.0;
-        for (int k = 0; k < this.cols; k++) {
-          sum += this.data[i][k] * m.data[k][j];
+      float[] c = result.data[i];
+      for (int k = 0; k < this.cols; k++) {
+        float a = this.data[i][k];
+        float[] b = m.data[k];
+        for (int j = 0; j < result.cols; j++) {
+          c[j] = a * b[j] + c[j];
         }
-        result.data[i][j] = sum;
+      }
+    }
+    return result;
+  }
+
+  public Matrix transform(Matrix m, boolean transposeA, boolean transposeB) {
+    int rowsA = transposeA ? this.cols : this.rows;
+    int colsA = transposeA ? this.rows : this.cols;
+    int rowsB = transposeB ? m.cols : m.rows;
+    int colsB = transposeB ? m.rows : m.cols;
+
+    if (colsA != rowsB) {
+      throw new IllegalArgumentException("rows of A must match rows of B.");
+    }
+
+    Matrix result = new Matrix(rowsA, colsB, 0.0);
+    if (transposeA && transposeB) {
+      for (int i = 0; i < result.rows; i++) {
+        float[] c = result.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = this.data[k][i];
+          float[][] b = m.data;
+          for (int j = 0; j < result.cols; j++) {
+            c[j] = a * b[j][k] + c[j];
+          }
+        }
+      }
+    } else if (transposeA && !transposeB) {
+      for (int i = 0; i < result.rows; i++) {
+        float[] c = result.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = this.data[k][i];
+          float[] b = m.data[k];
+          for (int j = 0; j < result.cols; j++) {
+            c[j] = a * b[j] + c[j];
+          }
+        }
+      }
+    } else if (!transposeA && transposeB) {
+      for (int i = 0; i < result.rows; i++) {
+        float[] c = result.data[i];
+        float[] a = this.data[i];
+        for (int j = 0; j < result.cols; j++) {
+          float[] b = m.data[j];
+          for (int k = 0; k < colsA; k++) {
+            c[j] = a[k] * b[k] + c[j];
+          }
+        }
+      }
+    } else {
+      for (int i = 0; i < result.rows; i++) {
+        float[] c = result.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = this.data[i][k];
+          float[] b = m.data[k];
+          for (int j = 0; j < result.cols; j++) {
+            c[j] = a * b[j] + c[j];
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+  
+  public boolean equals(Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    boolean result = true;
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        result &= this.data[i][j] == m.data[i][j]; 
       }
     }
     return result;
