@@ -28,10 +28,10 @@ class Parameters {
   }
 
   Parameters(int inputUnits, int units) {
-    this.W = new Matrix(units, inputUnits);
-    this.G = new Matrix(units, inputUnits);
-    this.M = new Matrix(units, inputUnits);
-    this.V = new Matrix(units, inputUnits);
+    this.W = new Matrix(units, inputUnits, 0.0);
+    this.G = W.copy().zero();
+    this.M = W.copy().zero();
+    this.V = W.copy().zero();
   }
 
   void reset() {
@@ -40,16 +40,30 @@ class Parameters {
     this.M.zero();
     this.V.zero();
   }
+  
+  void fromJSON(JSONObject json) {
+    this.W = new Matrix(json);
+    this.G = W.copy().zero();
+    this.M = W.copy().zero();
+    this.V = W.copy().zero();
+  }
+  
+  JSONObject toJSON() {
+    return this.W.toJSON();
+  }
 }
 
 class Layer {
   Parameters weights;
   Parameters biases;
+  float bias;
+  
   ActivationFunc activation;
   InitializerFunc initializer;
   NormalizerFunc normalizer;
+  
   Matrix output;
-  float bias;
+  
   Layer prev;
   Layer next;
 
@@ -72,11 +86,14 @@ class Layer {
   Layer(int inputUnits, int units, ActivationFunc activation, InitializerFunc initializer, NormalizerFunc normalizer) {
     this.weights = new Parameters(inputUnits, units);
     this.biases = new Parameters(units);
+    this.bias = 1.0;
+    
     this.activation = (activation == null) ? Linear : activation;
     this.initializer = (initializer == null) ? GlorotUniformInitializer : initializer;
     this.normalizer = normalizer;
+    
     this.output = null;
-    this.bias = 1.0;
+    
     this.prev = null;
     this.next = null;
     this.reset();
@@ -84,8 +101,8 @@ class Layer {
 
   void reset() {
     this.weights.reset();
-    this.initializer.apply(this.weights.W);
     this.biases.reset();
+    this.initializer.apply(this.weights.W);
   }
 
   void adjustGradients(Parameters p, Matrix g) {
@@ -97,6 +114,20 @@ class Layer {
   
   Matrix detach() {
     return this.output;
+  }
+  
+  void fromJSON(JSONObject json) {
+    this.weights.fromJSON(json.getJSONObject("weights"));
+    this.biases.fromJSON(json.getJSONObject("biases"));
+    this.bias = json.getFloat("bias");
+  }
+  
+  JSONObject toJSON() {
+    JSONObject json = new JSONObject();
+    json.setJSONObject("weights", this.weights.toJSON());
+    json.setJSONObject("biases", this.biases.toJSON());
+    json.setFloat("bias", this.bias);
+    return json;
   }
 }
 
@@ -128,6 +159,21 @@ class Model {
       layer.output = layer.activation.apply(net);
     }
     return this.end;
+  }
+  
+  void fromJSON(JSONArray json) {
+    int i = 0;
+    for (Layer layer = this.start; layer != null; layer = layer.next, i++) {
+      layer.fromJSON(json.getJSONObject(i));
+    }
+  }
+  
+  JSONArray toJSON() {
+    JSONArray json = new JSONArray();
+    for (Layer layer = this.start; layer != null; layer = layer.next) {
+      json.append(layer.toJSON());
+    }
+    return json;
   }
 }
 
@@ -193,6 +239,12 @@ abstract class Optimizer {
   void reset() {
     this.learningRate = this.learningRate0;
     this.epoch = 1;
+    for (Layer layer = this.model.start.next; layer != null; layer = layer.next) {
+      layer.weights.M.zero();
+      layer.weights.V.zero();
+      layer.biases.M.zero();
+      layer.biases.V.zero();
+    }
   }
 
   void zeroGradients() {

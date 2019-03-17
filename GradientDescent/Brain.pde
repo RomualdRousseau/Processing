@@ -23,7 +23,7 @@ class Brain {
   }
 
   void fit(ArrayList<PVector> points) {
-    if (points.size() == 0 || this.mean < 1e-6) {
+    if (points.size() == 0 || this.mean < 1e-4) {
       return;
     }
 
