@@ -64,6 +64,16 @@ class Matrix {
   public void set(int row, int col, float v) {
     this.data[row][col] = v;
   }
+  
+  public float sparsity() {
+    int count = 0;
+    for (int i = 0; i < this.rows; i++) {
+      for (int j = 0; j < this.cols; j++) {
+        count += (this.data[i][j] == 0.0) ? 1 : 0;
+      }
+    }
+    return float(count) / float(this.rows * this.cols);
+  }
 
   public float min(int col) {
     float minValue = this.data[0][col];

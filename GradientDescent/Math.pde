@@ -1,11 +1,15 @@
-float tanh(float x) {
-  return (float)Math.tanh(x);
-}
-
 float[] oneHot(int i, int n) {
   float[] state = new float[n];
   state[i] = 1.0;
   return state;
+}
+
+float tanh(float x) {
+  return (float)Math.tanh(x);
+}
+
+float sgn(float x) {
+  return (x > 0.0) ? 1.0 : ((x < 0.0) ? -1.0 : 0.0);
 }
 
 int argmax(float[] v) {
