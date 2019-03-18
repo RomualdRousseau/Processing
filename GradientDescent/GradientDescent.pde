@@ -1,6 +1,6 @@
 static final int SAMPLE_COUNT = 50;
 static final int BRAIN_CLOCK = 10;
-static final String BRAIN_MODEL = "Softmax";
+static final String BRAIN_DEFAULT_MODEL = "Softmax";
 static final int BRAIN_HIDDEN_NEURONS = 64;
 
 static final Action[] actionMap = {
@@ -28,7 +28,7 @@ void setup() {
   map2D = createImage(SAMPLE_COUNT, SAMPLE_COUNT, RGB);
   map3D = createGraphics(width/2, height/2, P3D);
   
-  Brain.init(BRAIN_MODEL);
+  Brain.init(BRAIN_DEFAULT_MODEL);
 }
 
 void draw() {
@@ -156,7 +156,7 @@ void drawCurves(int x, int y, int w, int h) {
   clip(x + 8, y + 96 - 1, w - 8, h - 8);
 
   strokeWeight(2);
-  stroke(133, 31, 255);
+  stroke(31, 133, 255);
   beginShape();
   for (int i = 0; i < accuracies.size(); i++) {
     Float accuracy = accuracies.get(i);

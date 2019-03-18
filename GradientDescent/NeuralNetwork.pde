@@ -40,14 +40,14 @@ class Parameters {
     this.M.zero();
     this.V.zero();
   }
-  
+
   void fromJSON(JSONObject json) {
     this.W = new Matrix(json);
     this.G = W.copy().zero();
     this.M = W.copy().zero();
     this.V = W.copy().zero();
   }
-  
+
   JSONObject toJSON() {
     return this.W.toJSON();
   }
@@ -57,13 +57,13 @@ class Layer {
   Parameters weights;
   Parameters biases;
   float bias;
-  
+
   ActivationFunc activation;
   InitializerFunc initializer;
   NormalizerFunc normalizer;
-  
+
   Matrix output;
-  
+
   Layer prev;
   Layer next;
 
@@ -87,13 +87,13 @@ class Layer {
     this.weights = new Parameters(inputUnits, units);
     this.biases = new Parameters(units);
     this.bias = 1.0;
-    
+
     this.activation = (activation == null) ? Linear : activation;
     this.initializer = (initializer == null) ? GlorotUniformInitializer : initializer;
     this.normalizer = normalizer;
-    
+
     this.output = null;
-    
+
     this.prev = null;
     this.next = null;
     this.reset();
@@ -111,17 +111,17 @@ class Layer {
       this.normalizer.apply(p.W);
     }
   }
-  
+
   Matrix detach() {
     return this.output;
   }
-  
+
   void fromJSON(JSONObject json) {
     this.weights.fromJSON(json.getJSONObject("weights"));
     this.biases.fromJSON(json.getJSONObject("biases"));
     this.bias = json.getFloat("bias");
   }
-  
+
   JSONObject toJSON() {
     JSONObject json = new JSONObject();
     json.setJSONObject("weights", this.weights.toJSON());
@@ -160,14 +160,18 @@ class Model {
     }
     return this.end;
   }
-  
+
   void fromJSON(JSONArray json) {
-    int i = 0;
+    int i = json.size();
+    for (Layer layer = this.start; layer != null; layer = layer.next, i--);
+    if (i != 0) {
+      throw new IllegalArgumentException("model must match the model layout.");
+    }
     for (Layer layer = this.start; layer != null; layer = layer.next, i++) {
       layer.fromJSON(json.getJSONObject(i));
     }
   }
-  
+
   JSONArray toJSON() {
     JSONArray json = new JSONArray();
     for (Layer layer = this.start; layer != null; layer = layer.next) {
@@ -198,8 +202,9 @@ class Loss {
     Matrix error = this.rate;
     for (Layer layer = this.output; layer.prev != null; layer = layer.prev) {
       // An equation for the error in the output layer
-      //error = layer.activation.derivate(layer.output).squarify(true).transform(error);
-      error = diag_mul_b(error, layer.activation.derivate(layer.output));
+      // error = layer.activation.derivate(layer.output).squarify(true).transform(error);
+      // fast_a_mul_b optimizes a bit by doing an adamar multiplication when both are vectors
+      error = fast_a_mul_b(error, layer.activation.derivate(layer.output));
       // An equation for the rate of change of the error with respect to any weight in the network
       Matrix deltaWeigths = error.transform(layer.prev.output, false, true);
       // An equation for the rate of change of the error with respect to any bias in the network

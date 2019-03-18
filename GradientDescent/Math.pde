@@ -32,6 +32,6 @@ Matrix xw_plus_b(Matrix input, Matrix weights, Matrix bias) {
   return weights.transform(input).add(bias);
 }
 
-Matrix diag_mul_b(Matrix a, Matrix b) {
+Matrix fast_a_mul_b(Matrix a, Matrix b) {
   return (b.rows != b.cols) ? b.mult(a) : b.transform(a);
 }
