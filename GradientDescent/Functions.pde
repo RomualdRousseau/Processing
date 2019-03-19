@@ -263,11 +263,7 @@ class OptimizerSgd extends Optimizer {
 
   Matrix computeGradients(Parameters p) {
     final float lr = this.learningRate;
-
-    Matrix g = p.G.copy();
-
-    p.M.mult(this.momemtum).add(g.mult(1.0 - this.momemtum));
-
+    p.M.mult(this.momemtum).fma(p.G, 1.0 - this.momemtum); 
     return p.M.copy().mult(lr);
   }
 }
@@ -294,7 +290,7 @@ class OptimizerRMSProp extends Optimizer {
       }
     };
 
-    p.V.mult(this.b).add(p.G.copy().pow(2.0).mult(1.0 - this.b));
+    p.V.mult(this.b).fma(p.G.copy().pow(2.0), 1.0 - this.b);
 
     return p.G.copy().map(fn, p.V);
   }
@@ -324,11 +320,8 @@ class OptimizerAdam extends Optimizer {
       }
     };
 
-    Matrix g1 = p.G.copy();
-    Matrix g2 = p.G.copy().pow(2.0);
-
-    p.M.mult(this.b1).add(g1.mult(1.0 - this.b1));
-    p.V.mult(this.b2).add(g2.mult(1.0 - this.b2));
+    p.M.mult(this.b1).fma(p.G, 1.0 - this.b1);
+    p.V.mult(this.b2).fma(p.G.copy().pow(2.0), 1.0 - this.b2);
 
     return p.M.copy().map(fn, p.V);
   }

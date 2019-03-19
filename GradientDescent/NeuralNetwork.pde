@@ -201,19 +201,10 @@ class Loss {
   Loss backward() {
     Matrix error = this.rate;
     for (Layer layer = this.output; layer.prev != null; layer = layer.prev) {
-      // An equation for the error in the output layer
-      // error = layer.activation.derivate(layer.output).squarify(true).transform(error);
-      // fast_a_mul_b optimizes a bit by doing an adamar multiplication when both are vectors
-      error = fast_a_mul_b(error, layer.activation.derivate(layer.output));
-      // An equation for the rate of change of the error with respect to any weight in the network
-      Matrix deltaWeigths = error.transform(layer.prev.output, false, true);
-      // An equation for the rate of change of the error with respect to any bias in the network
-      Matrix deltaBiases = error.copy().mult(layer.prev.bias);
-      // An equation for the error in terms of the error in the next layer
+      error = a_mul_b(error, layer.activation.derivate(layer.output));
+      layer.weights.G.fma(error, layer.prev.output, false, true);
+      layer.biases.G.fma(error, layer.prev.bias);
       error = layer.weights.W.transform(error, true, false);
-      // Updates the weights and the biases by their deltas
-      layer.weights.G.add(deltaWeigths);
-      layer.biases.G.add(deltaBiases);
     }
     return this;
   }

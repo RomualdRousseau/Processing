@@ -20,8 +20,9 @@ class Matrix {
     this.cols = cols;
     this.data = new float[this.rows][this.cols];
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = v;
+        a[j] = v;
       }
     }
   }
@@ -64,12 +65,28 @@ class Matrix {
   public void set(int row, int col, float v) {
     this.data[row][col] = v;
   }
-  
+
+  public boolean equals(Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    boolean result = true;
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        result &= a[j] == b[j];
+      }
+    }
+    return result;
+  }
+
   public float sparsity() {
     int count = 0;
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        count += (this.data[i][j] == 0.0) ? 1 : 0;
+        count += (a[j] == 0.0) ? 1 : 0;
       }
     }
     return float(count) / float(this.rows * this.cols);
@@ -117,8 +134,9 @@ class Matrix {
 
   public Matrix zero() {
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = 0.0;
+        a[j] = 0.0;
       }
     }
     return this;
@@ -126,8 +144,9 @@ class Matrix {
 
   public Matrix ones() {
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = 1.0;
+        a[j] = 1.0;
       }
     }
     return this;
@@ -135,8 +154,9 @@ class Matrix {
 
   public Matrix identity() {
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = (i == j) ? 1.0 : 0.0;
+        a[j] = (i == j) ? 1.0 : 0.0;
       }
     }
     return this;
@@ -144,9 +164,10 @@ class Matrix {
 
   public Matrix mutate(float rate, float variance) {
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
         if (random(1.0) < rate) {
-          this.data[i][j] += randomGaussian() * variance;
+          a[j] += randomGaussian() * variance;
         }
       }
     }
@@ -160,107 +181,9 @@ class Matrix {
 
   public Matrix randomize(float n) {
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = random(-n, n);
-      }
-    }
-    return this;
-  }
-
-  public Matrix add(Matrix m) {
-    if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] += m.data[i][j];
-      }
-    }
-    return this;
-  }
-
-  public Matrix sub(Matrix m) {
-    if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] -= m.data[i][j];
-      }
-    }
-    return this;
-  }
-
-  public Matrix mult(float n) {
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] *= n;
-      }
-    }
-    return this;
-  }
-
-  public Matrix mult(Matrix m) {
-    if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] *= m.data[i][j];
-      }
-    }
-    return this;
-  }
-
-  public Matrix div(float n) {
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] /= n;
-      }
-    }
-    return this;
-  }
-
-  public Matrix div(Matrix m) {
-    if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] /= m.data[i][j];
-      }
-    }
-    return this;
-  }
-
-  public Matrix pow(float n) {
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = (float) Math.pow(this.data[i][j], n);
-      }
-    }
-    return this;
-  }
-
-  public Matrix map(MatrixFunction<Float, Float> fn) {
-    if (fn == null) {
-      throw new IllegalArgumentException("function is not defined");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = fn.apply(this.data[i][j], i, j, this);
-      }
-    }
-    return this;
-  }
-
-  public Matrix map(MatrixFunction<Float, Float> fn, Matrix other) {
-    if (fn == null) {
-      throw new IllegalArgumentException("function is not defined");
-    }
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        this.data[i][j] = fn.apply(this.data[i][j], i, j, other);
+        a[j] = random(-n, n);
       }
     }
     return this;
@@ -273,6 +196,7 @@ class Matrix {
         sum += this.data[i][j] * this.data[i][j];
       }
       sum = sqrt(sum);
+
       for (int i = 0; i < this.rows; i++) {
         this.data[i][j] /= sum;
       }
@@ -303,12 +227,249 @@ class Matrix {
     return this;
   }
 
+  public Matrix add(final Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] += b[j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix sub(final Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] -= b[j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix mult(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] *= n;
+      }
+    }
+    return this;
+  }
+
+  public Matrix mult(final Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] *= b[j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix div(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] /= n;
+      }
+    }
+    return this;
+  }
+
+  public Matrix div(final Matrix m) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] /= b[j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix pow(float n) {
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] = (float) Math.pow(a[j], n);
+      }
+    }
+    return this;
+  }
+
+  public Matrix fma(final Matrix m1, final Matrix m2) {
+    if (this.rows != m1.rows || this.cols != m2.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B * C.");
+    }
+    if (m1.cols != m2.rows) {
+      throw new IllegalArgumentException("cols of B must match rows of C.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] c = this.data[i];
+      for (int k = 0; k < m1.cols; k++) {
+        float a = m1.data[i][k];
+        float[] b = m2.data[k];
+        for (int j = 0; j < this.cols; j++) {
+          c[j] = a * b[j] + c[j];
+        }
+      }
+    }
+    return this;
+  }
+
+  public Matrix fma(final Matrix m1, final Matrix m2, boolean transposeA, boolean transposeB) {
+    final int colsA = transposeA ? m1.rows : m1.cols;
+    final int rowsA = transposeA ? m1.cols : m1.rows;
+    final int colsB = transposeB ? m2.rows : m2.cols;
+    final int rowsB = transposeB ? m2.cols : m2.rows;
+
+    if (this.rows != rowsA || this.cols != colsB) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B * C.");
+    }
+    if (colsA != rowsB) {
+      throw new IllegalArgumentException("cols of B must match rows of C.");
+    }
+
+    if (transposeA && transposeB) {
+      for (int i = 0; i < this.rows; i++) {
+        float[] c = this.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = m1.data[k][i];
+          float[][] b = m2.data;
+          for (int j = 0; j < this.cols; j++) {
+            c[j] = a * b[j][k] + c[j];
+          }
+        }
+      }
+    } else if (transposeA && !transposeB) {
+      for (int i = 0; i < this.rows; i++) {
+        float[] c = this.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = m1.data[k][i];
+          float[] b = m2.data[k];
+          for (int j = 0; j < this.cols; j++) {
+            c[j] = a * b[j] + c[j];
+          }
+        }
+      }
+    } else if (!transposeA && transposeB) {
+      for (int i = 0; i < this.rows; i++) {
+        float[] c = this.data[i];
+        float[] a = m1.data[i];
+        for (int j = 0; j < this.cols; j++) {
+          float[] b = m2.data[j];
+          for (int k = 0; k < colsA; k++) {
+            c[j] = a[k] * b[k] + c[j];
+          }
+        }
+      }
+    } else {
+      for (int i = 0; i < this.rows; i++) {
+        float[] c = this.data[i];
+        for (int k = 0; k < colsA; k++) {
+          float a = m1.data[i][k];
+          float[] b = m2.data[k];
+          for (int j = 0; j < this.cols; j++) {
+            c[j] = a * b[j] + c[j];
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  public Matrix fma(final Matrix m, float n) {
+    if (this.rows != m.rows || this.cols != m.cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = m.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] = b[j] * n + a[j];
+      }
+    }
+    return this;
+  }
+
+  public Matrix fma(final Matrix m, float n, boolean transpose) {
+    final int cols = transpose ? m.rows : m.cols;
+    final int rows = transpose ? m.cols : m.rows;
+
+    if (this.rows != rows || this.cols != cols) {
+      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
+    }
+    if (transpose) {
+      for (int i = 0; i < this.rows; i++) {
+        float[] a = this.data[i];
+        float[] b = m.data[i];
+        for (int j = 0; j < this.cols; j++) {
+          a[j] = b[i] * n + a[j];
+        }
+      }
+    } else {
+      for (int i = 0; i < this.rows; i++) {
+        float[] a = this.data[i];
+        float[] b = m.data[i];
+        for (int j = 0; j < this.cols; j++) {
+          a[j] = b[j] * n + a[j];
+        }
+      }
+    }
+    return this;
+  }
+
+  public Matrix map(MatrixFunction<Float, Float> fn) {
+    if (fn == null) {
+      throw new IllegalArgumentException("function is not defined");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] = fn.apply(a[j], i, j, this);
+      }
+    }
+    return this;
+  }
+
+  public Matrix map(MatrixFunction<Float, Float> fn, Matrix other) {
+    if (fn == null) {
+      throw new IllegalArgumentException("function is not defined");
+    }
+    for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
+      for (int j = 0; j < this.cols; j++) {
+        a[j] = fn.apply(a[j], i, j, other);
+      }
+    }
+    return this;
+  }
+
   public Matrix copy() {
     Matrix result = new Matrix(this.rows, this.cols);
     for (int i = 0; i < result.rows; i++) {
-      for (int j = 0; j < result.cols; j++) {
-        result.data[i][j] = this.data[i][j];
-      }
+      float[] a = this.data[i];
+      float[] b = result.data[i];
+      System.arraycopy(a, 0, b, 0, result.cols);
+      //for (int j = 0; j < result.cols; j++) {
+      //  b[j] = a[j];
+      //}
     }
     return result;
   }
@@ -317,8 +478,10 @@ class Matrix {
     Matrix result = new Matrix(this.rows, this.rows);
     if (this.rows == this.cols) {
       for (int i = 0; i < this.rows; i++) {
+        float[] a = this.data[i];
+        float[] b = result.data[i];
         for (int j = 0; j < this.cols; j++) {
-          result.data[i][j] = this.data[i][j];
+          b[j] = a[j];
         }
       }
     } else if (diagonal) {
@@ -327,8 +490,10 @@ class Matrix {
       }
     } else {
       for (int i = 0; i < this.rows; i++) {
+        float[] a = this.data[i];
+        float[] b = result.data[i];
         for (int j = 0; j < this.rows; j++) {
-          result.data[i][j] = this.data[i][0];
+          b[j] = a[0];
         }
       }
     }
@@ -338,14 +503,16 @@ class Matrix {
   public Matrix transpose() {
     Matrix result = new Matrix(this.cols, this.rows);
     for (int i = 0; i < result.rows; i++) {
+      float[] a = this.data[i];
+      float[] b = result.data[i];
       for (int j = 0; j < result.cols; j++) {
-        result.data[i][j] = this.data[j][i];
+        b[j] = a[i];
       }
     }
     return result;
   }
-  
-  public Matrix transform(Matrix m) {
+
+  public Matrix transform(final Matrix m) {
     if (this.cols != m.rows) {
       throw new IllegalArgumentException("cols of A must match rows of B.");
     }
@@ -363,12 +530,12 @@ class Matrix {
     return result;
   }
 
-  public Matrix transform(Matrix m, boolean transposeA, boolean transposeB) {
-    int rowsA = transposeA ? this.cols : this.rows;
-    int colsA = transposeA ? this.rows : this.cols;
-    int rowsB = transposeB ? m.cols : m.rows;
-    int colsB = transposeB ? m.rows : m.cols;
-
+  public Matrix transform(final Matrix m, boolean transposeA, boolean transposeB) {
+    final int colsA = transposeA ? this.rows : this.cols;
+    final int rowsA = transposeA ? this.cols : this.rows;
+    final int colsB = transposeB ? m.rows : m.cols;
+    final int rowsB = transposeB ? m.cols : m.rows;
+    
     if (colsA != rowsB) {
       throw new IllegalArgumentException("rows of A must match rows of B.");
     }
@@ -422,30 +589,24 @@ class Matrix {
 
     return result;
   }
-  
-  public boolean equals(Matrix m) {
-    if (this.rows != m.rows || this.cols != m.cols) {
-      throw new IllegalArgumentException("cardinality of A must match cardinality of B.");
-    }
-    boolean result = true;
-    for (int i = 0; i < this.rows; i++) {
-      for (int j = 0; j < this.cols; j++) {
-        result &= this.data[i][j] == m.data[i][j]; 
-      }
-    }
-    return result;
-  }
 
   public JSONObject toJSON() {
+    JSONObject json = new JSONObject();
+
+    if(this.rows == 0 || this.cols == 0) {
+      return json;
+    }
+
     JSONArray jsonData = new JSONArray();
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       JSONArray jsonRow = new JSONArray();
       for (int j = 0; j < this.cols; j++) {
-        jsonRow.setFloat(j, this.data[i][j]);
+        jsonRow.setFloat(j, a[j]);
       }
       jsonData.setJSONArray(i, jsonRow);
     }
-    JSONObject json = new JSONObject();
+    
     json.setInt("rows", this.rows);
     json.setInt("cols", this.cols);
     json.setJSONArray("data", jsonData);
@@ -453,18 +614,21 @@ class Matrix {
   }
 
   public String toString() {
+    if(this.rows == 0 || this.cols == 0) {
+      return "||";
+    }
+    
     StringBuilder result = new StringBuilder();
     for (int i = 0; i < this.rows; i++) {
+      float[] a = this.data[i];
       result.append("| ");
-      for (int j = 0; j < this.cols; j++) {
-        if (j == this.cols - 1) {
-          result.append(String.format("%.5f", this.data[i][j]));
-        } else {
-          result.append(String.format("%.5f\t", this.data[i][j]));
-        }
+      for (int j = 0; j < this.cols - 1; j++) {
+        result.append(String.format("%.5f\t", a[j]));
       }
+      result.append(String.format("%.5f", a[this.cols - 1]));
       result.append(" |").append(System.lineSeparator());
     }
+    
     return result.toString();
   }
 }
