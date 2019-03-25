@@ -248,14 +248,6 @@ class ExponentialScheduler implements LearningRateScheduler {
 class OptimizerSgd extends Optimizer {
   float momemtum;
   
-  OptimizerSgd(Model model) {
-    this(model, 0.001, null);
-  }
-  
-  OptimizerSgd(Model model, float learningRate) {
-    this(model, learningRate, null);
-  }
-
   OptimizerSgd(Model model, float learningRate, LearningRateScheduler scheduler) {
     super(model, learningRate, scheduler);
     this.momemtum = 0.9;
@@ -271,13 +263,9 @@ class OptimizerSgd extends Optimizer {
 class OptimizerRMSProp extends Optimizer {
   float b;
 
-  OptimizerRMSProp(Model model) {
-    this(model, 0.001);
-  }
-
-  OptimizerRMSProp(Model model, float learningRate) {
-    super(model, learningRate);
-    this.b = 0.9;
+  OptimizerRMSProp(Model model, float learningRate, LearningRateScheduler scheduler, float b) {
+    super(model, learningRate, scheduler);
+    this.b = b;
   }
 
   Matrix computeGradients(Parameters p) {
@@ -300,14 +288,10 @@ class OptimizerAdam extends Optimizer {
   float b1;
   float b2;
 
-  OptimizerAdam(Model model) {
-    this(model, 0.001);
-  }
-
-  OptimizerAdam(Model model, float learningRate) {
-    super(model, learningRate);
-    this.b1 = 0.9;
-    this.b2 = 0.999;
+  OptimizerAdam(Model model, float learningRate, LearningRateScheduler scheduler, float b1, float b2) {
+    super(model, learningRate, scheduler);
+    this.b1 = b1;
+    this.b2 = b2;
   }
 
   Matrix computeGradients(Parameters p) {

@@ -24,6 +24,18 @@ int argmax(float[] v) {
   return result;
 }
 
+int argmin(float[] v) {
+  int result = 0;
+  float minValue = v[0];
+  for (int i = 1; i < v.length; i++) {
+    if (v[i] < minValue) {
+      minValue = v[i];
+      result = i;
+    }
+  }
+  return result;
+}
+
 float unlerp(float a, float b, float v) {
   return (v - a) / (b - a);
 }

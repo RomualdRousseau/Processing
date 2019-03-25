@@ -77,6 +77,9 @@ void computeMap3D() {
   map3D.translate(map3D.width / 2, map3D.height / 2, map3D_zoom * 20);
   map3D.rotateX(map3D_angleX);
   map3D.rotateY(map3D_angleY);
+  map3D.noFill();
+  map3D.stroke(255);
+  map3D.box(200, 200, 200);
   for (int i = 0; i < SAMPLE_COUNT - 1; i++) {
     map3D.beginShape(TRIANGLE_STRIP);
     for (int j = 0; j < SAMPLE_COUNT; j++) {
@@ -84,9 +87,9 @@ void computeMap3D() {
         color c = map2D.get(j, i + k);
         float v0 = constrain(unlerp(51, 128, green(c)), 0, 1);
         float v1 = constrain(unlerp(51, 255, blue(c)), 0, 1);
-        float px = map(j, 0, SAMPLE_COUNT, -100, 100);
-        float py = map(v1 / (v0 + v1 + EPSILON), 0, 1, -20, 20);
-        float pz = map(i + k, 0, SAMPLE_COUNT, -100, 100);
+        float px = map(j, 0, SAMPLE_COUNT - 1, -99, 99);
+        float py = map(v1 / (v0 + v1 + EPSILON), 0, 1, -99, 99);
+        float pz = map(i + k, 0, SAMPLE_COUNT - 1, -99, 99);
         map3D.stroke(c);
         map3D.fill(c, 192);
         map3D.vertex(px, py, pz);

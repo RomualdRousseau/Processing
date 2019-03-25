@@ -69,31 +69,71 @@ class Brain_ {
 
   void buildModelSoftmax() {
     this.model = new Model();
-    this.model.add(new Layer(2, BRAIN_HIDDEN_NEURONS, LeakyRelu, GlorotUniformInitializer, BatchNormalizer));
-    this.model.add(new Layer(BRAIN_HIDDEN_NEURONS, BRAIN_HIDDEN_NEURONS, LeakyRelu, GlorotUniformInitializer, BatchNormalizer));
-    this.model.add(new Layer(BRAIN_HIDDEN_NEURONS, 2, Softmax));
-
-    this.optimizer = new OptimizerAdam(this.model);
+    
+    this.model.add(new LayerBuilder()
+      .setInputUnits(2)
+      .setUnits(BRAIN_HIDDEN_NEURONS)
+      .setActivation(LeakyRelu)
+      .setNormalizer(BatchNormalizer)
+      .build());
+      
+    this.model.add(new LayerBuilder()
+      .setInputUnits(BRAIN_HIDDEN_NEURONS)
+      .setUnits(BRAIN_HIDDEN_NEURONS)
+      .setActivation(LeakyRelu)
+      .setNormalizer(BatchNormalizer)
+      .build());
+      
+    this.model.add(new LayerBuilder()
+      .setInputUnits(BRAIN_HIDDEN_NEURONS)
+      .setUnits(2)
+      .setActivation(Softmax)
+      .build());
+    
+    this.optimizer = new OptimizerAdamBuilder().build(this.model);
 
     this.criterion = new Loss(SoftmaxCrossEntropy);
   }
 
   void buildModelMSE() {
     this.model = new Model();
-    this.model.add(new Layer(2, BRAIN_HIDDEN_NEURONS, Tanh));
-    this.model.add(new Layer(BRAIN_HIDDEN_NEURONS, 2, Linear));
+    
+    this.model.add(new LayerBuilder()
+      .setInputUnits(2)
+      .setUnits(BRAIN_HIDDEN_NEURONS)
+      .setActivation(Tanh)
+      .build());
+      
+    this.model.add(new LayerBuilder()
+      .setInputUnits(BRAIN_HIDDEN_NEURONS)
+      .setUnits(2)
+      .setActivation(Linear)
+      .build());
 
-    this.optimizer = new OptimizerSgd(this.model, 0.1, new ExponentialScheduler(0.0001, 1, 0.001));
+    this.optimizer = new OptimizerSgdBuilder()
+      .setLearningRate(0.1)
+      .setScheduler(new ExponentialScheduler(0.0001, 1, 0.001))
+      .build(this.model);
 
     this.criterion = new Loss(MeanSquaredError);
   }
 
   void buildModelHuber() {
     this.model = new Model();
-    this.model.add(new Layer(2, BRAIN_HIDDEN_NEURONS, Relu));
-    this.model.add(new Layer(BRAIN_HIDDEN_NEURONS, 2, Linear));
+    
+    this.model.add(new LayerBuilder()
+      .setInputUnits(2)
+      .setUnits(BRAIN_HIDDEN_NEURONS)
+      .setActivation(Relu)
+      .build());
+      
+    this.model.add(new LayerBuilder()
+      .setInputUnits(BRAIN_HIDDEN_NEURONS)
+      .setUnits(2)
+      .setActivation(Linear)
+      .build());
 
-    this.optimizer = new OptimizerRMSProp(this.model);
+    this.optimizer = new OptimizerRMSPropBuilder().build(this.model);
 
     this.criterion = new Loss(Huber);
   }

@@ -67,26 +67,10 @@ class Layer {
   Layer prev;
   Layer next;
 
-  Layer() {
-    this(0, 0, null, null, null);
-  }
-
-  Layer(int inputUnits, int units) {
-    this(inputUnits, units, null, null, null);
-  }
-
-  Layer(int inputUnits, int units, ActivationFunc activation) {
-    this(inputUnits, units, activation, null, null);
-  }
-
-  Layer(int inputUnits, int units, ActivationFunc activation, InitializerFunc initializer) {
-    this(inputUnits, units, activation, initializer, null);
-  }
-
-  Layer(int inputUnits, int units, ActivationFunc activation, InitializerFunc initializer, NormalizerFunc normalizer) {
+  Layer(int inputUnits, int units, float bias, ActivationFunc activation, InitializerFunc initializer, NormalizerFunc normalizer) {
     this.weights = new Parameters(inputUnits, units);
     this.biases = new Parameters(units);
-    this.bias = 1.0;
+    this.bias = bias;
 
     this.activation = (activation == null) ? Linear : activation;
     this.initializer = (initializer == null) ? GlorotUniformInitializer : initializer;
@@ -136,7 +120,7 @@ class Model {
   Layer end;
 
   Model() {
-    this.start = new Layer();
+    this.start = new LayerBuilder().build();
     this.end = this.start;
   }
 
@@ -216,14 +200,6 @@ abstract class Optimizer {
   float learningRate0, learningRate;
   int epoch;
 
-  Optimizer(Model model) {
-    this(model, 0.001, null);
-  }
-
-  Optimizer(Model model, float learningRate) {
-    this(model, learningRate, null);
-  }
-
   Optimizer(Model model, float learningRate, LearningRateScheduler scheduler) {
     this.model = model;
     this.learningRate0 = learningRate;
@@ -264,4 +240,26 @@ abstract class Optimizer {
   }
 
   abstract Matrix computeGradients(Parameters p);
+}
+
+abstract class OptimizerBuilder<T extends Optimizer> {
+  float learningRate;
+  LearningRateScheduler scheduler;
+  
+  OptimizerBuilder() {
+    this.learningRate = 0.001;
+    this.scheduler = null;
+  }
+  
+  OptimizerBuilder setLearningRate(float learningRate) {
+    this.learningRate = learningRate;
+    return this;
+  }
+
+  OptimizerBuilder setScheduler(LearningRateScheduler scheduler) {
+    this.scheduler = scheduler;
+    return this;
+  }
+
+  abstract T build(Model model);
 }
