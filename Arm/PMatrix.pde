@@ -46,31 +46,49 @@ class PMatrix {
         A.data[i][j] = (i == j) ? 1 : 0;
     return A;
   }
-  
+
   public PMatrix rotateX(float a) {
     PMatrix A = this;
     if (A.M != A.N && A.N != 3) throw new RuntimeException("Illegal matrix dimensions.");
-    A.data[0][0] = 1; A.data[0][1] = 0;      A.data[0][2] = 0;
-    A.data[1][0] = 0; A.data[1][1] = cos(a); A.data[1][2] = -sin(a);
-    A.data[2][0] = 0; A.data[2][1] = sin(a); A.data[2][2] = cos(a);
+    A.data[0][0] = 1; 
+    A.data[0][1] = 0;      
+    A.data[0][2] = 0;
+    A.data[1][0] = 0; 
+    A.data[1][1] = cos(a); 
+    A.data[1][2] = -sin(a);
+    A.data[2][0] = 0; 
+    A.data[2][1] = sin(a); 
+    A.data[2][2] = cos(a);
     return A;
   }
-  
+
   public PMatrix rotateY(float a) {
     PMatrix A = this;
     if (A.M != A.N && A.N != 3) throw new RuntimeException("Illegal matrix dimensions.");
-    A.data[0][0] = cos(a);  A.data[0][1] = 0; A.data[0][2] = sin(a);
-    A.data[1][0] = 0;       A.data[1][1] = 1; A.data[1][2] = 0;
-    A.data[2][0] = -sin(a); A.data[2][1] = 0; A.data[2][2] = cos(a);
+    A.data[0][0] = cos(a);  
+    A.data[0][1] = 0; 
+    A.data[0][2] = sin(a);
+    A.data[1][0] = 0;       
+    A.data[1][1] = 1; 
+    A.data[1][2] = 0;
+    A.data[2][0] = -sin(a); 
+    A.data[2][1] = 0; 
+    A.data[2][2] = cos(a);
     return A;
   }
 
   public PMatrix rotateZ(float a) {
     PMatrix A = this;
     if (A.M != A.N && A.N != 3) throw new RuntimeException("Illegal matrix dimensions.");
-    A.data[0][0] = cos(a); A.data[0][1] = -sin(a); A.data[0][2] = 0;
-    A.data[1][0] = sin(a); A.data[1][1] = cos(a);  A.data[1][2] = 0;
-    A.data[2][0] = 0;      A.data[2][1] = 0;       A.data[2][2] = 1;
+    A.data[0][0] = cos(a); 
+    A.data[0][1] = -sin(a); 
+    A.data[0][2] = 0;
+    A.data[1][0] = sin(a); 
+    A.data[1][1] = cos(a);  
+    A.data[1][2] = 0;
+    A.data[2][0] = 0;      
+    A.data[2][1] = 0;       
+    A.data[2][2] = 1;
     return A;
   }
 

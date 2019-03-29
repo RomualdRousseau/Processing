@@ -1,52 +1,49 @@
-boolean inMap2D = false;
-boolean inMap3D = false;
-
 void mouseMoved() {
   if (0 <= mouseX && mouseX < width / 2 && 0 <= mouseY && mouseY < height / 2) {
-    inMap2D = true;
-    inMap3D = false;
+    Map2D.active = true;
+    Map3D.active = false;
   } else if (width / 2 <= mouseX && mouseX < width && 0 <= mouseY && mouseY < height / 2) {
-    inMap2D = false;
-    inMap3D = true;
+    Map2D.active = false;
+    Map3D.active = true;
   } else {
-    inMap2D = false;
-    inMap3D = false;
+    Map2D.active = false;
+    Map3D.active = false;
   }
 }
 
 void mouseClicked() {
-  if (inMap2D) {
+  if (Map2D.active) {
     float x = map(mouseX, 0, width / 2, 0, 1);
     float y = map(mouseY, 0, height / 2, 0, 1);
     float z =  (mouseButton == LEFT) ? 0 : 1;
-    points.add(new PVector(x, y, z));
+    Map2D.points.add(new PVector(x, y, z));
     Brain.dataChanged = true;
   }
 }
 
 void mouseDragged() {
-  if (inMap3D) {
+  if (Map3D.active) {
     if (mouseButton == LEFT) {
-      map3D_angleY += (mouseX - pmouseX) * 0.01;
-      map3D_angleX -= (mouseY - pmouseY) * 0.01;
+      Map3D.view.y += (mouseX - pmouseX) * 0.01;
+      Map3D.view.x -= (mouseY - pmouseY) * 0.01;
     } else if (mouseButton == RIGHT) {
-      map3D_zoom += sgn(pmouseY - mouseY);
+      Map3D.view.z += sgn(pmouseY - mouseY);
     }
   }
 }
 
 void mouseWheel(MouseEvent event) {
-  if (inMap3D) {
-    map3D_zoom += -event.getCount();
+  if (Map3D.active) {
+    Map3D.view.z += -event.getCount();
   }
 }
 
 void keyPressed() {
   if (keyCode == actionMap[0].keyCode) {
-    points.clear();
+    Map2D.points.clear();
     Brain.optimizer.reset();
   } else if (keyCode == actionMap[1].keyCode) {
-    points.clear();
+    Map2D.points.clear();
     Brain.model.reset();
     Brain.optimizer.reset();
   } else if (keyCode == actionMap[2].keyCode) {

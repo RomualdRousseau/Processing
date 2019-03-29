@@ -27,8 +27,8 @@ class Brain_ {
     return this.model.model(input).detach();
   }
 
-  void fit(ArrayList<PVector> points) {
-    if (!this.dataChanged && (points.size() == 0 || this.mean < 1e-4)) {
+  void fit() {
+    if (!this.dataChanged && (Map2D.points.size() == 0 || this.mean < 1e-4)) {
       this.dataChanged = false;
       return;
     }
@@ -39,17 +39,21 @@ class Brain_ {
 
       this.optimizer.zeroGradients();
 
-      for (int i = 0; i < points.size(); i++) {
-        PVector point = points.get(i);
+      for (int i = 0; i < Map2D.points.size(); i++) {
+        PVector point = Map2D.points.get(i);
 
         Matrix input = new Matrix(new float[] { point.x, point.y });
         Matrix target = new Matrix(oneHot(int(point.z), 2));
 
         Layer output = this.model.model(input);
         Loss loss = this.criterion.loss(output, target);
-        loss.backward();
+        
+        if(output.output.argmax(0) != target.argmax(0)) {
+          loss.backward();
+        } else {
+          sumAccu++;
+        }
 
-        sumAccu += (output.output.argmax(0) == target.argmax(0)) ? 1 : 0;
         sumMean += loss.value.flatten(0);
 
         if (Float.isNaN(sumMean)) {
@@ -62,8 +66,8 @@ class Brain_ {
 
       this.optimizer.step();
 
-      this.accuracy = constrain(sumAccu / points.size(), 0, 1);
-      this.mean = constrain(sumMean / points.size(), 0, 1);
+      this.accuracy = constrain(sumAccu / Map2D.points.size(), 0, 1);
+      this.mean = constrain(sumMean / Map2D.points.size(), 0, 1);
     }
   }
 
