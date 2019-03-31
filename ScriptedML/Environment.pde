@@ -59,7 +59,10 @@ class Environment {
         action = 0;
       } else {
         println("Move to safe zone");
-        this.soldier.moveTo(PVector.sub(this.gun.pos, this.portal.pos).rotate(PI/ 2).mult(2.0).add(this.portal.pos));
+        PVector a = PVector.sub(this.soldier.pos, this.portal.pos).normalize();
+        PVector b = PVector.sub(this.gun.pos, this.portal.pos).normalize();
+        PVector c = a.copy();
+        this.soldier.moveTo(a.cross(b).cross(c).mult(-0.5));
       }
       break;
       
