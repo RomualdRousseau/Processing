@@ -1,9 +1,19 @@
 class Rock extends Entity {
+  PVector[] points = new PVector[10];
+  
   Rock() {
     this.position = new PVector(random(0, width), random(0, height));
     this.velocity = PVector.random2D().mult(random(1.0, 3.0));
     this.acceleration = new PVector(0, 0);
     this.mass = random(50, 200);
+    
+    for(int i = 0; i < points.length; i++) {
+      float a = map(i, 0, points.length, 0, 2 * PI);
+      float d = 0.5 * this.mass * random(0.5, 1.0);
+      float x = d * cos(a);
+      float y = d * sin(a);
+      points[i] = new PVector(x, y);
+    }
   }
 
   Rock(Rock parent) {
@@ -11,6 +21,14 @@ class Rock extends Entity {
     this.velocity = PVector.random2D().mult(random(1.0, 3.0));
     this.acceleration = new PVector(0, 0);
     this.mass = parent.mass / 2;
+    
+    for(int i = 0; i < points.length; i++) {
+      float a = map(i, 0, points.length, 0, 2 * PI);
+      float d = 0.5 * this.mass * random(0.5, 1.0);
+      float x = d * cos(a);
+      float y = d * sin(a);
+      points[i] = new PVector(x, y);
+    }
   }
 
   void collideRocks() {
@@ -27,6 +45,10 @@ class Rock extends Entity {
 
   void show() {
     stroke(255);
-    ellipse(this.position.x, this.position.y, this.mass, this.mass);
+    beginShape();
+    for(int i = 0; i < points.length; i++) {
+      vertex(this.position.x + points[i].x, this.position.y + points[i].y);
+    }
+    endShape(CLOSE);
   }
 }
