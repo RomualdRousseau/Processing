@@ -147,18 +147,18 @@ class Model {
 
   void fromJSON(JSONArray json) {
     int i = json.size();
-    for (Layer layer = this.start; layer != null; layer = layer.next, i--);
+    for (Layer layer = this.start.next; layer != null; layer = layer.next, i--);
     if (i != 0) {
       throw new IllegalArgumentException("model must match the model layout.");
     }
-    for (Layer layer = this.start; layer != null; layer = layer.next, i++) {
+    for (Layer layer = this.start.next; layer != null; layer = layer.next, i++) {
       layer.fromJSON(json.getJSONObject(i));
     }
   }
 
   JSONArray toJSON() {
     JSONArray json = new JSONArray();
-    for (Layer layer = this.start; layer != null; layer = layer.next) {
+    for (Layer layer = this.start.next; layer != null; layer = layer.next) {
       json.append(layer.toJSON());
     }
     return json;
