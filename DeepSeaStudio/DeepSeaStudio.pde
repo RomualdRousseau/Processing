@@ -76,8 +76,8 @@ void draw() {
       float[] entityVec1 = NlpHelper.entity2vec(viewer.currentSheet.currentHeader, 0.8);
       float[] entityVec2 = NlpHelper.entity2vec(viewer.currentSheet.currentCell, 0.8);
       EntityType[] entityTypes = EntityType.values();
-      for (int i = 1; i < entityTypes.length; i++) {
-        text(String.format("%.0f %.0f %s", entityVec1[i - 1], entityVec2[i - 1], entityTypes[i]), 0, 176 + i * 16);
+      for (int i = 0; i < entityTypes.length; i++) {
+        text(String.format("%.0f %.0f %s", entityVec1[i], entityVec2[i], entityTypes[i]), 0, 176 + i * 16);
       }
     }
     
@@ -154,6 +154,18 @@ void keyPressed(KeyEvent e) {
       ProgressBar.show();
     } else {
       ProgressBar.stop();
+    }
+  }
+  
+  if (key==CODED && keyCode == java.awt.event.KeyEvent.VK_F3) {
+    String searchedFilename = ClipHelper.pasteString();
+    for (int i = 0; i < documentFileNames.length; i++) {
+      if (documentFileNames[i].contains(searchedFilename)) {
+        currentDocumentIndex = i;
+        ProgressBar.start("Loading document ...", true);
+        thread("loadDocument");
+        return;
+      }
     }
   }
   

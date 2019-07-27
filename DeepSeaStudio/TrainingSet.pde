@@ -29,7 +29,7 @@ class TrainingSet_ {
   boolean checkConflict(float[] input, float[] target) {
     int i  = 0;
     while (i < this.inputs.size() && !java.util.Arrays.equals(this.inputs.get(i), input)) i++;
-    
+
     return i < this.inputs.size() && !java.util.Arrays.equals(this.targets.get(i), target);
   }
 
@@ -40,13 +40,13 @@ class TrainingSet_ {
     while (i < this.inputs.size() && !java.util.Arrays.equals(this.inputs.get(i), input)) i++;
 
     if (i == this.inputs.size()) {
+      println("-- added a new row", Tag.values()[argmax(target)]);
       this.inputs.add(input);
       this.targets.add(target);
-    } else {
-      //if (!java.util.Arrays.equals(this.targets.get(i), target)) {
-      //  throw new UnsupportedOperationException("CONFLICTING TARGETS");
-      //}
+    } else if (!java.util.Arrays.equals(this.targets.get(i), target)) {
+      println("-- replaced a conflicted row", Tag.values()[argmax(this.targets.get(i))], Tag.values()[argmax(target)]);
       this.targets.set(i, target);
+      //throw new UnsupportedOperationException("CONFLICTING TARGETS");
     }
   }
 

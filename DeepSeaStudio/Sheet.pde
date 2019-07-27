@@ -14,10 +14,10 @@ class Sheet extends Container {
     if (this.cells == null) {
       return;
     }
-
+    
     for (int j = 0; j < this.headers.length; j++) {
       Header header = (Header) this.headers[j];
-      if (header != null) {
+      if (header != null && !header.newTag.equals(header.orgTag)) {
         TrainingSet.registerWord(header.cleanValue, NGRAMS);
         float[] input = TrainingSet.buildInput(header, header.getConflicts(true));  
         float[] target = TrainingSet.buildTarget(header);
@@ -171,7 +171,7 @@ class Sheet extends Container {
 
       int k = 1;
       for (int i = 1; i < numberOfRows; i++) {
-        Row row = (Row) table.getRowAt(i - 1); 
+        IRow row = (IRow) table.getRowAt(i - 1); 
         try {
           if (row.isEmpty(0.5)) {
             continue;

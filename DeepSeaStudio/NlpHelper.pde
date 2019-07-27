@@ -1,5 +1,4 @@
-enum EntityType { 
-  NONE, 
+enum EntityType {
     DATE, 
     POSTAL_CODE, 
     REFERENCE, 
@@ -45,7 +44,7 @@ class NlpHelper_ {
     this.stopwords = new String[table.getRowCount()];
 
     int i = 0;
-    for (TableRow row : table.rows()) {
+    for (processing.data.TableRow row : table.rows()) {
       this.stopwords[i] = row.getString(0).trim();
       i++;
     }
@@ -57,7 +56,7 @@ class NlpHelper_ {
     this.entities = new Entity[table.getRowCount()];
 
     int i = 0;
-    for (TableRow row : table.rows()) {
+    for (processing.data.TableRow row : table.rows()) {
       this.entities[i] = new Entity(row.getString(0).trim(), EntityType.valueOf(row.getString(1).trim()));
       i++;
     }
@@ -77,8 +76,6 @@ class NlpHelper_ {
       String[] m = match(s, this.entities[i].pattern);
       if (m != null) {
         result[i] = this.entities[i].type;
-      } else {
-        result[i] = EntityType.NONE;
       }
     }
 
@@ -93,7 +90,7 @@ class NlpHelper_ {
       result = new float[ENTITYVEC_LENGTH];
       int n = 0;
 
-      for (int i = 1; i < sheet.cells.length; i++) {
+      for (int i = 0; i < sheet.cells.length; i++) {
         Cell other = sheet.cells[i][cell.col];
         if (other != null) {
           float[] tmp = this.entity2vec(other.types, ENTITYVEC_LENGTH);
@@ -117,8 +114,8 @@ class NlpHelper_ {
 
     for (int j = 0; j < types.length; j++) {
       EntityType type = types[j];
-      if(!type.equals(EntityType.NONE)) {
-        result[type.ordinal() - 1] = 1;
+      if(type != null) {
+        result[type.ordinal()] = 1;
       }
     }
 
