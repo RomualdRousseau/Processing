@@ -16,8 +16,8 @@ String getDataPath(String relativeFilename){
 void ensureDataPathExist() {
   if (ANDROID) {
     new File(getDataPath("")).mkdirs();
-    JSONObject jsonBrain = loadJSONObject("melody.json");
-    saveJSONObject(jsonBrain, getDataPath("melody.json"));
+    com.github.romualdrousseau.shuju.json.JSONObject jsonBrain = JSON.loadJSONObject("melody.json");
+    JSON.saveJSONObject(jsonBrain, getDataPath("melody.json"));
   }
 }
 

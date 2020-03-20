@@ -111,7 +111,7 @@ class UI_
     if (buttonSaveTheBest.clicked) {
       Genetic.calculateFitness();
       Genetic.samplePool(1);
-      saveJSONObject(birds.get(0).brain.toJSON(), getDataPath("melody.json"));
+      JSON.saveJSONObject(birds.get(0).brain.toJSON(), getDataPath("melody.json"));
     }
     
     buttonSwitchAudio.update();

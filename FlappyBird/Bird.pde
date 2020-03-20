@@ -24,7 +24,7 @@ class Bird extends Entity {
     this.acceleration = new PVector(0, 0);
   }
   
-  Bird(JSONObject jsonBrain) {
+  Bird(com.github.romualdrousseau.shuju.json.JSONObject jsonBrain) {
     super();
     
     this.brain = new GeneticNeuralNetwork(jsonBrain);
@@ -94,7 +94,7 @@ class Bird extends Entity {
       });
     Matrix output = this.brain.predict(input);
  
-    return output.data[0][0] > output.data[1][0];
+    return output.get(0, 0) > output.get(1, 0);
   }
 
   void meet(Entity entity) {

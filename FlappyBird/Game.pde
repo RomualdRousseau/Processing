@@ -20,7 +20,7 @@ class Game_ {
     birds = new ArrayList<Bird>();
     if (mode == GameMode.DEMO) {
       if (fileExistsInData("melody.json")) {
-        JSONObject jsonBrain = loadJSONObject(getDataPath("melody.json"));
+        com.github.romualdrousseau.shuju.json.JSONObject jsonBrain = JSON.loadJSONObject(getDataPath("melody.json"));
         birds.add(new Bird(jsonBrain));
       } else if (firstRun) {
         for (int i = 0; i < BIRDS_COUNT; i++) {
@@ -37,7 +37,7 @@ class Game_ {
       Genetic.newPool();
     } else {
       if (fileExistsInData("melody.json")) {
-        JSONObject jsonBrain = loadJSONObject(getDataPath("melody.json"));
+        com.github.romualdrousseau.shuju.json.JSONObject jsonBrain = JSON.loadJSONObject(getDataPath("melody.json"));
         birds.add(new Bird(jsonBrain));
       } else {
         birds.add(new Bird());
