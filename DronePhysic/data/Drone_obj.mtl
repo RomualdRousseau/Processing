@@ -1,0 +1,15 @@
+# Blender MTL File: 'Controllable Drone Just The Model.blend'
+# Material Count: 1
+
+newmtl Flying_drone
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.527027 0.527027 0.527027
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Flying_drone_nor.jpg
+map_Bump Flying_drone_nor.jpg
+map_Ks Flying_drone_col.jpg
