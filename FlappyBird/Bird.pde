@@ -85,14 +85,14 @@ class Bird extends Entity {
       return false;
     }
     
-    Matrix input = new Matrix(new float[] {
+    Tensor2D input = new Tensor2D(new float[] {
       this.position.y / HEIGHT, 
       this.velocity.y / BIRD_MAX_SPEED, 
       (closest.top.x - this.position.x) / WIDTH, 
       (closest.top.y - this.position.y) / HEIGHT, 
       (closest.bottom.y - this.position.y) / HEIGHT
       });
-    Matrix output = this.brain.predict(input);
+    Tensor2D output = this.brain.predict(input);
  
     return output.get(0, 0) > output.get(1, 0);
   }

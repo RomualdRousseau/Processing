@@ -6,7 +6,6 @@ import com.github.romualdrousseau.shuju.math.*;
 import com.github.romualdrousseau.shuju.ml.nn.activation.*;
 import com.github.romualdrousseau.shuju.ml.nn.initializer.*;
 import com.github.romualdrousseau.shuju.ml.nn.loss.*;
-import com.github.romualdrousseau.shuju.ml.nn.normalizer.*;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.*;
 import com.github.romualdrousseau.shuju.ml.qlearner.*;
 import com.github.romualdrousseau.shuju.nlp.impl.*;
@@ -80,9 +79,9 @@ class GeneticNeuralNetwork {
     }
   }
   
-  public Matrix predict(Matrix input) {
-    Matrix hidden = this.layer1.feedForward(input);
-    Matrix output = this.layer2.feedForward(hidden);
+  public Tensor2D predict(Tensor2D input) {
+    Tensor2D hidden = this.layer1.feedForward(input.transpose());
+    Tensor2D output = this.layer2.feedForward(hidden);
     return output;
   }
   
@@ -108,9 +107,9 @@ class GeneticNeuralNetwork {
 }
 
 class Layer {
-  Matrix weights;
-  Matrix gradients;
-  Matrix bias;
+  Tensor2D weights;
+  Tensor2D gradients;
+  Tensor2D bias;
   ActivationFunction activation;
 
   public Layer(int inputUnits, int units) {
@@ -118,9 +117,9 @@ class Layer {
   }
 
   public Layer(int inputUnits, int units, ActivationFunction activation) {
-    this.weights = new Matrix(units, inputUnits);
-    this.gradients = new Matrix(units, 1);
-    this.bias = new Matrix(units, 1);
+    this.weights = new Tensor2D(units, inputUnits);
+    this.gradients = new Tensor2D(units, 1);
+    this.bias = new Tensor2D(units, 1);
     this.activation = activation;
   }
   
@@ -129,9 +128,9 @@ class Layer {
   }
   
   public Layer(com.github.romualdrousseau.shuju.json.JSONObject json, ActivationFunction activation) {
-    this.weights = new Matrix(json.getJSONObject("weights"));
-    this.gradients = new Matrix(json.getJSONObject("gradients"));
-    this.bias = new Matrix(json.getJSONObject("bias"));
+    this.weights = new Tensor2D(json.getJSONObject("weights"));
+    this.gradients = new Tensor2D(json.getJSONObject("gradients"));
+    this.bias = new Tensor2D(json.getJSONObject("bias"));
     this.activation = activation;
   }
 
@@ -143,29 +142,29 @@ class Layer {
   }
 
   public int getInputUnits() {
-    return this.weights.colCount();
+    return this.weights.shape[1];
   }
 
   public int getOutputUnits() {
-    return this.weights.rowCount();
+    return this.weights.shape[0];
   }
 
   public void reset() {
-    this.weights.randomize(this.weights.rowCount());
+    this.weights.randomize(this.weights.shape[0]);
     this.gradients.zero();
-    this.bias.randomize(this.bias.rowCount());
+    this.bias.randomize(this.bias.shape[0]);
   }
 
   public Layer clone() {
     return new Layer(this);
   }
 
-  public Matrix feedForward(Matrix input) {
-    return this.activation.activate(this.weights.transform(input).add(this.bias));
+  public Tensor2D feedForward(Tensor2D input) {
+    return this.activation.activate(this.weights.matmul(input).add(this.bias));
   }
 
-  public Matrix propagateError(Matrix loss) {
-    return this.weights.transpose().transform(loss);
+  public Tensor2D propagateError(Tensor2D loss) {
+    return this.weights.transpose().matmul(loss);
   }
   
   public com.github.romualdrousseau.shuju.json.JSONObject toJSON() {
@@ -194,14 +193,14 @@ class ExponentialScheduler implements LearningRateScheduler {
 }
 
 interface ActivationFunction {
-  Matrix activate(Matrix input);
-  Matrix derivate(Matrix output, Matrix error);
+  Tensor2D activate(Tensor2D input);
+  Tensor2D derivate(Tensor2D output, Tensor2D error);
 }
 
 class TanhActivationFunction implements ActivationFunction {
-  Matrix activate(Matrix input) {
-    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float x, int row, int col, Matrix matrix) {
+  Tensor2D activate(Tensor2D input) {
+    final TensorFunction fn = new TensorFunction() {
+      public final float apply(float x, int[] coord, AbstractTensor matrix) {
         float a = exp(x);
         float b = exp(-x);
         return (a - b) / (a + b);
@@ -210,59 +209,59 @@ class TanhActivationFunction implements ActivationFunction {
     return input.map(fn);
   }
   
-  Matrix derivate(Matrix output, Matrix error) {
-    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float y, int row, int col, Matrix matrix) {
+  Tensor2D derivate(Tensor2D output, Tensor2D error) {
+    final TensorFunction fn = new TensorFunction() {
+      public final float apply(float y, int[] coord, AbstractTensor matrix) {
         return 1.0 - y * y;
       }
     };
     
-    Matrix m = output.copy();
+    Tensor2D m = output.copy();
 
-    return m.map(fn).mult(error);
+    return m.map(fn).mul(error);
   }
 }
 
 class SoftmaxActivationFunction implements ActivationFunction {
-  Matrix activate(Matrix input) {
-    if(input.colCount() > 1) {
+  Tensor2D activate(Tensor2D input) {
+    if(input.shape[1] > 1) {
       throw new IllegalArgumentException("Softmax must be used on the output layer");
     }
     
-    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float x, int row, int col, Matrix matrix) {
+    final TensorFunction fn = new TensorFunction() {
+      public final float apply(float x, int[] coord, AbstractTensor matrix) {
         return exp(x);
       }
     };
     
     float sum = 0.0;
-    for(int k = 0; k < input.rowCount(); k++) {
+    for(int k = 0; k < input.shape[0]; k++) {
       sum += exp(input.get(k, 0));
     }
 
     return input.map(fn).div(sum);
   }
   
-  Matrix derivate(Matrix output, Matrix error) {
-    if(output.colCount() > 1) {
+  Tensor2D derivate(Tensor2D output, Tensor2D error) {
+    if(output.shape[1] > 1) {
       throw new IllegalArgumentException("Softmax must be used on the output layer");
     }
     
-    final MatrixFunction<Float, Float> fn = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float y, int row, int col, Matrix matrix) {
-        return (row == col) ? y * (1 - y) : -y * matrix.get(col, col);
+    final TensorFunction fn = new TensorFunction() {
+      public final float apply(float y, int[] coord, AbstractTensor matrix) {
+        return (coord[0] == coord[1]) ? y * (1 - y) : -y * ((Tensor2D) matrix).data[coord[1]][coord[1]];
       }
     };
     
-    // Matrix m = output.copy().ones().transform(output.transpose());
-    Matrix m = new Matrix(output.rowCount(), output.rowCount());
-    for(int i = 0; i < m.rowCount(); i++) {
-      for(int j = 0; j < m.colCount(); j++) {
+    // Tensor2D m = output.copy().ones().transform(output.transpose());
+    Tensor2D m = new Tensor2D(output.shape[0], output.shape[0]);
+    for(int i = 0; i < m.shape[0]; i++) {
+      for(int j = 0; j < m.shape[1]; j++) {
         m.set(i, j, output.get(j, 0)); 
       }
     }
 
-    return m.map(fn).transform(error);
+    return m.map(fn).matmul(error);
   }
 }
 
@@ -284,7 +283,7 @@ abstract class Optimizer {
     this.biasRate = biasRate;
   }
 
-  abstract void optimize(Layer layer, Matrix input, Matrix output, Matrix error);
+  abstract void optimize(Layer layer, Tensor2D input, Tensor2D output, Tensor2D error);
 }
 
 class OptimizerGenetic extends Optimizer {
@@ -295,9 +294,9 @@ class OptimizerGenetic extends Optimizer {
     this.mutationRate = mutationRate;
   }
 
-  public void optimize(Layer layer, Matrix input, Matrix output, Matrix error) {
-    MatrixFunction<Float, Float> mutationFunc = new MatrixFunction<Float, Float>() {
-      public final Float apply(Float x, int row, int col, Matrix matrix) {
+  public void optimize(Layer layer, Tensor2D input, Tensor2D output, Tensor2D error) {
+    TensorFunction mutationFunc = new TensorFunction() {
+      public final float apply(float x, int[] coord, AbstractTensor matrix) {
         if (random(1.0) < mutationRate) {
           return x + randomGaussian() * learningRate;
         } else {
