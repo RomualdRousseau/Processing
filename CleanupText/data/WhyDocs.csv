@@ -1,0 +1,196 @@
+"
+?Data control,  Automatization of extract of doctor list (project on going), PDP calculation and extraction, Bonus calculation,  Reporting not available in Wave or not enough complete to use it locally
+
+"
+"
+?We just got info tha tthis is available, but never got some guidance - we are really not good in SQL and most need we cover with Reports in Lynx and in Power BI
+"
+"
+?We connect to both LynX directly and to the restitution database for the Power BI reports we produce for the field and for management. 
+"
+"
+?we are not good in SQL, we cover most of the needs from Reports and Power BI - but if we would get some guidance maybe yes
+"
+"
+?
+The data from the db is the singles source for HCP and HCO data, products information, sectorization and Sales team organization, Events and events participation. The information is used for integration with the internal datawarehouse, BPM system, Reporting system:Analysis of Sales force activity data and ad-hoc reportingBPM (approval of promotional activities and payments) – data for HCO, HCP, products, Medical events and events participation.Regulatory data – data from 4 surveys for HCP- event speakers managementExpenses Notes - data for teams organization and structure.Reporting Services system – pharmacy data and activities.
+"
+"
+?AS Cubes ActivityPower BI Activity Dashboards
+MCCP automatic calculation   
+"
+"
+?Local management feels the need for customised reports that are not available via Wave etc.
+"
+"
+?Performance reports required by local management are not otherwise available
+"
+"
+??The Restitution DB is our MAIN source to get the Lynx Data for all our Business Reports automatically.
+We load into our local DataLake all the data we need for Power BI reports.
+Without the Restitution DB, we cannot produce the reports required by the Business.
+Salesforce Direct connect (Report API with max 2000 records) is only use to get the latest reference data to control changes. The data are intergted into some Power BI reports."
+"
+There were no clear guidelines or SLAs and we had other priorities.For Wave reports, cubes were enough. 
+"
+"
+???AS Cubes Activity
+
+Power BI Activity Dashboards"
+"
+?Not taken in use
+"
+"
+??We're using the Restitution DB to pull HCP and HCO data from Lynx and integrate to other applications. We would like to use this also for operational reports when it will be reliable for this (please see issues section). 
+"
+"
+We use:1.  We load Cycle Plan 
+2. We load Targets 
+3. We load Brick to Territory
+4. We load HCP
+5. We load Event IDs
+6. We load users
+7. We load adresses for accounts
+We load all the data we can see for our Country Code. 
+CA1SW47 has a connection to the restitution DB in Surval
+
+
+
+"
+"
+??we are using restitution database in views to retrieve data from lynx CRM 
+views as for example:
+ACCOUNT_HCO_EMEA
+ACCOUNT_HCP_EMEA
+
+MC_CYCLE_EMEAMC_CYCLE_CHANNEL_EMEAMC_CYCLE_PLAN_EMEAMC_CYCLE_PLAN_CHANNEL_EMEAMC_CYCLE_PLAN_TARGET_EMEAMC_CYCLE_PRODUCT_EMEAMC_CYCLE_PLAN_PRODUCT_EMEA
+we are using direct connection in lynx core reports
+"
+"
+?We're not using it currently, but we would be interesed in using it as supposadly would help to solve our issues with report creation.
+"
+"
+no comments"
+"
+?We are using the restitution database for interfaces to other systems, mainly to expenses and erp-system.For expenses sales-people entering their expenses in Lynx and we extract them to our expenses system.
+For event management planned costs are extracted to our ERP-system to generate a purchase request there. Additional we extracxt uploaded documents related to events and import them into our document management system with the needed link to the ERP-system.
+
+
+"
+"
+?We are using the Restitution Database for the following activities in BR1:Support      legacy systemsReports      of data that is not available in the WAVE cubesMCCP automatization processSamples integrationDashboard      data healthPower      BI Dataflows:
+"
+"
+?I think we had setup some views to have access to the DB when we implemented Lynx but we have never used it. I guess we just didn't have the skills at the time to use that data in an automated fashion.
+"
+"At the beggining of implementation of Veeva in RU we requested direct connection for integration needs. ?Only one option was proposed for Russia - usage of Replica of DB. We would be happy to have opportunity to connect to SF directly though web API for integration purposes.?
+"
+"
+??We actually not use Rest DB yet. We try to use mostly Wave cubes.  But we plan to use restitution DB to load activity data into DataWarehouse for conslodated reports. 
+??We use direct connection to download photo taken by OTC reps for feather load processing and review
+
+"
+"
+
+some data could not provided by BI ,we need to extract  data for calculation and activity analysis 
+"
+"
+We use the Wave database"
+"
+?We use both. About salesforce direct connection we have developed some reports and some list to give our users to have direct access to some analisys in real time.
+About the restitution DB we use it a lot for multiple purposes that cannot be solved with Wave or salesforce online.
+I give some use cases:
+Sample stock calculation: to      check Rep’s stocks to organize new shipments, for internal Audits etc.Check privacy data collection:      to have a list of HCPs without privacy data to send to AM.List of My Target accounts to      prepare Cycle Plan files to send to support.List of  HCPs and      Pharmacies in My Target to check updating of files from Reps in case of      review.Number of calls and accounts      seen each month, calls per product and Company for Finance purpose and for      Marketing researches.Extraction of doubled accounts      to merge in Veeva (temporary account merged into final one inserted by      Iqvia)Hospital acivities monitoring
+
+
+Every data analysis requested by Management can be, also, performed by a simple SQL query.
+
+
+"
+"
+?If what you mean by Salesforce direct connection is we create and access reports in salesforce.com?, then the answer is yes, but only occassionally and as needed.
+But Restitution database is the main source of our local Power BI activity reports and dashboards. We created SQL tasks that automatically runs everyday to fetch data from there.
+"
+"
+?1. The views in restitution env. are used as a data source of incremental data loading into a local db copy (selected data only), and then the collected data is used for integration with other systems, data quality control,  as a source of mass generated report sent to representatives.
+ 2. Direct access to salesforce.com is used incidentally for data control purposes, especially after mass loading/changing of data in Lynx and to check data not available through the views.
+"
+"
+?Used for historical data storage as we need to cleanse Veeva database from ""old"" activity data to prevent us from purchasing costly additional storage capacity form SFDC.
+
+"
+"
+??To get Lynx CRM data from Restitation DB is a more eailer way for us:
+
+    - To integrate data into our local data warehouse;
+
+
+
+    - To provide data services for business usages(like PDP calcuation based on survey data), other applications, digital projects, BI reports based on our local data warehouse, data mart and data service API;
+
+
+
+    - To generate Lynx maintainance templates for local admin automatically, for example MCCP templates;
+
+
+
+    - To provice more accurate data from local to Lynx CRM by talend integration;
+
+
+
+    - To generate a golden HCP master data between Lynx CRM and other local digital multichannel promotion solutions;
+
+
+
+Compared the use of SalesForce direct connection, we are facing the following chanllenges:
+
+
+
+    - Access speed because of the country limiation;
+
+
+    - API limitation from SF platform;
+"
+"
+?I did not know about it. I will discuss the possible usage of this DB with the sales efectiveness manager.
+"
+"
+?i do not know what is the LynX CRM Restitution Database, or How to access it and use it.
+"
+"
+???Never got info about restitution database... We are actually using only WAVE and integrated reporting on salesforce.com
+"
+"
+ We aren't using this from the beginning of the Go live of lynx CRM. Since we haven't skilled Sql people. 
+
+"
+"
+?We are not having connection to the DB. Usage is through regular CRM Reports and Wave PowerBI, As far as we are aware, we have not get official release of thie service."
+"
+?We only use the connection throught the SQL that Global has hosted. We make the request for access to different information of the datawarehouse for example: approved e-mail, veeva engage, salesforce lynx, etc.
+The use of the direct connection to Salesforce isn´t enabled, because the support team is the only one to make the request settings.
+"
+"
+?We don't use
+"
+"
+It is much easier and more efficient to use restitution database and we have no way to access WAVE data remotely.
+"
+"
+??No we do not use the SQL database. We never got the communication to access it. As of today, we are using the data coming from the Menu Report to create/customized our Activity Reports (manual or in Power BI). 
+
+
+
+"
+"
+??Collaborations with HCPs and HCOs for all events are entered in Lynx, with the amounts for each collaboration. Every day the information is extracted from the Data Restitution, and with an interface to our ECM (Onbase Software), the documentation is generated for each of the professionals (HCO and HCP) to generate the contracts that will be signed in EDATALIA (similar to Docusign), at the end of the year the information from the data restitution will be extracted to generate the EFPIA report.An incident for Spain is knowing when the copy in the Data Restitution ends, we delayed the process of extracting the information at 11:30, because we had it at 8:30 and many days the information was not available, it would be desirable to have a alert for countries when the Lynx-Data Restitution copy process finishes.
+
+This is a critical process in Spain in terms of Compliance, all the contracts with the HCO and HCP are signed based in Data Restitution. 
+
+
+
+"
+"
+We were not aware of the existance of restoration database.
+But may like to use it for some local reports or for some historic reference.
+"

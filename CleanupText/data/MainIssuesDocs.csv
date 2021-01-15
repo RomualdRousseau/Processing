@@ -1,0 +1,148 @@
+"
+??Today not available in cloud and no direct interface.  Data access is too long. Nevertheless it's the unique and most easy solution to extract and automize a lot of our processes as we do not have accesss  to the datawarehouse / datamart. The environment is much more complete than the cube.
+
+Use of salesforce connection on reports is not possible as the quantity of line is limited, and on objects it's much easier to use the restitution database. I think for the future.
+"
+"
+?if this means Report directly in Lynx than yes - basically this is for now all we need. We can do a lof in exporting and merging in Excel. this does not mean that we would not use Resitution access but we are not masters in SQL
+"
+"
+?The main issues are:There is no support for issues when connecting to Lynx directly 
+The connection to the restitution data is very slow and unreliable in our experience. Further to this as we have been largely working from home since March 2020 I have not been able to access the database at all as it was only accessible via office LAN and not VPN.
+"
+"
+?If this means Reports directly in Lynx than yes - this covers most of our needs, and of course Power BI
+"
+"
+?Changing structure of the db.
+
+"
+"
+?Limit when use reports for complex views
+"
+"
+?Performance when querying restitution DB can be poor"
+"
+?Performance can be poor and it can be difficult to engage at right level for support.
+"
+"
+?New fields or tables in Lynx are not automaticaly added into the Restitution DB.Some required fields are sometimes missing ad we have to make a request to have them being added."
+"
+There were no clear guidelines or SLAs and we had other priorities.For Wave reports, cubes were enough. "
+"
+?Data Gateway disconnected suddenly. Data does not refreshed suddenly. 
+"
+"
+?NO
+"
+"
+The main issues regarding the restitution db are:1) Poor response time - any query takes at least 3 minutes. This is why we need to run overnight jobs to take the  raw data on our side and then query the local database. This also means that we don't have real time data- 1 day delay.
+2) Changes to the structure of Lynx entities are not transfered to the restitution database in real time, and we are not notified when the changes happen.
+3) The data in the restitution database is not refreshed in real time. For the moment this is not a big deal because we already have a 1 day delay, but if we base the reports on this database, it should be refreshed more often."
+"
+Following a salesfore reorganization, the old territories still appear 
+"
+"
+??????views issues:
+
+
+
+views do not run on real time (always there is delay 24 hours)
+some views do not retrieve datasuccessfully. 
+some changes done on views without sending us mail with the updates done.
+
+in some cases the views returned errors due to restoration process failure
+
+
+
+"
+"
+?Not all the necessary locally required measures can be found in reports.
+"
+"
+?We only use the WAVE Cube data.
+"
+"
+??For the interface it's a big problem if fieldnames are changed without any information before. This happened a few month ago ... .
+Connecting and extracting information is slow, but this was the only solution we've got by Cognizant. We are only getting information views. As long as we don't get information about database structure and indexes we can't optimize it.
+Password changes of the users, with which we connect, disturbs automatic interfaces.
+"
+"
+?The      performance to querying in the DB is poor, any query takes too much time!      (In order to improve it, we run overnight jobs to take the data on our      side then query in the local database.)Changing      structure of the DB without an advance communication;New      tables/fields developed to Lynx CRM are not automatically added into DRE;The      data is not refreshed in the real time;There      are not clear guidelines;
+"
+"
+?Not sure what this means, but I guess we do use reporting on Salesforce online.
+
+In the future, we would like to use the direct connection (if allows) to directly bring in Lynx activity and HCP data to our Data warehouse to use to generate some new dashboards linked to  some local data sources that not available in the normal WAVE dashboards/data sets
+"
+"Delay with delivery of actual data (ones per day, but ideally is to have actual data by direct request), not fully described the structure of DB, not enough communcation about updates of structure
+"
+"
+?Issue is absense of photo review facility inside LynX CRM so we have to use external connection to download photo.
+"
+"
+?data not refreshed suddenly and poor response
+
+
+
+"
+"
+?We use the Wave database
+"
+"
+When new fields or tables are added in Lynx, these are not automatically added in the DB or in th online stricture and support cannot be so quick.
+
+
+
+In the salesforce online is not possibile to creat complex reports?Performance when querying restitution DB can be poor
+"
+"
+?Issues on Restitution Database:
+
+Performance. It takes so much time accessing the data, especially activities. Sometimes, timeout errors occurred.All fields in Lynx are not avaiable in restitution. We need to request for some fileds to be included there.No documentation/description of fields/tables in the database. You have to find your way there.
+"
+"
+?long delays in refreshing data available through the views. There have been cases of views/columns removal or renaming of columns - this is unacceptable
+"
+"
+?Today, he are over capacity in our 3 orgs.
+
+
+"
+"
+?Main issues when using the Restitution DB:- View performance especaily in some big data views, like Call, HCP, Survey and so on. The reason maybe come from DB or network; Compared before, I found some optimization for performance has been done. So that we can get data from Call views now;
+- Sometimes happen the connection timeout error during the ETL process running;
+- Lack enought documents or communcation to tell the data refresh shedule from Lynx CRM to Restitution DB and the DB structure;
+"
+"
+?I was also not clear with this. This topic is to be discussed internally.
+"
+"
+?Data Loading takes alot of time
+"
+"
+??Never got info about direct connection... We are actually using only WAVE and integrated reporting on salesforce.com
+"
+"
+??For the reprting solution we are fully depend on BI and sometimes BI reports isn't showing realtime data then follow Lynx CRM online reports.
+"
+"
+?Some issues with the complexity of the reports. Sometimes we are in the need of connecting several categories. Most information are coming from PowerBI
+"
+"
+We only use Wave cube Data."
+"
+?No major issues reported
+"
+"
+?We don't know was the SalesForce direct connection actually is or whether we are already using it.
+"
+"
+?Yes, we use the Salesforce Reports to get our data. 
+"
+"
+SalesForce direct connection does not give all the records, it has a limit, in some cases it is necessary to use the Data Restitution for some reports. We have tried to connect it through PowerBI but it does not work correctly.
+"
+"
+?No guidance /awarence was provided.
+"
