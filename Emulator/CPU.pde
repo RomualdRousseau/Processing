@@ -19,7 +19,7 @@ class PROCESSOR {
   static final char NMI  = 0x02;
 }
 
-class INSTRUCTION {
+class OPCODE {
   static final char LDA = 0xa9;
   static final char LDX = 0xa2;
   static final char LDY = 0xa0;
@@ -155,7 +155,7 @@ class CPU_t {
 
     opcode_func = () -> {
       switch (state) {
-        case (INSTRUCTION.LDA << 4): // LOAD DATA IN ACC
+        case (OPCODE.LDA << 4): // LOAD DATA IN ACC
           a = BUS.data;
           pc++;
           BUS.rw = 1;
@@ -164,7 +164,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.LDX << 4): // LOAD DATA IN X
+        case (OPCODE.LDX << 4): // LOAD DATA IN X
           x = BUS.data;
           pc++;
           BUS.rw = 1;
@@ -173,7 +173,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.LDY << 4): // LOAD DATA IN Y
+        case (OPCODE.LDY << 4): // LOAD DATA IN Y
           y = BUS.data;
           pc++;
           BUS.rw = 1;
@@ -182,7 +182,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.TXA << 4): // TRANSFER X TO ACC
+        case (OPCODE.TXA << 4): // TRANSFER X TO ACC
           a = x;
           BUS.rw = 1;
           BUS.addr = pc;
@@ -190,7 +190,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.TYA << 4): // TRANSFER Y TO ACC
+        case (OPCODE.TYA << 4): // TRANSFER Y TO ACC
           a = y;
           BUS.rw = 1;
           BUS.addr = pc;
@@ -198,7 +198,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.TAX << 4): // TRANSFER ACC TO X
+        case (OPCODE.TAX << 4): // TRANSFER ACC TO X
           x = a;
           BUS.rw = 1;
           BUS.addr = pc;
@@ -206,7 +206,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.TAY << 4): // TRANSFER ACC TO Y
+        case (OPCODE.TAY << 4): // TRANSFER ACC TO Y
           y = a;
           BUS.rw = 1;
           BUS.addr = pc;
@@ -214,7 +214,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.ADC << 4): // ADD DATA TO ACC
+        case (OPCODE.ADC << 4): // ADD DATA TO ACC
           alu = ps & STATUS.CARY;
           alu = alu + a + BUS.data;
           ps = (char) (((alu & 0xFF) == 0) ? (ps | STATUS.ZERO) : (ps & ~STATUS.ZERO));
@@ -228,7 +228,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.CMP << 4):  // CMP DATA TO ACC
+        case (OPCODE.CMP << 4):  // CMP DATA TO ACC
           alu = 0;
           alu = alu + a - BUS.data;
           ps = (char) (((alu & 0xFF) == 0) ? (ps | STATUS.ZERO) : (ps & ~STATUS.ZERO));
@@ -241,14 +241,14 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.STA << 4): // MOVE ACC TO MEM #1
+        case (OPCODE.STA << 4): // MOVE ACC TO MEM #1
           alu = BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           state++;
           break;
-        case (INSTRUCTION.STA << 4) + 1: // MOVE ACC TO MEM #2
+        case (OPCODE.STA << 4) + 1: // MOVE ACC TO MEM #2
           alu = alu + (BUS.data << 8) + 0;
           pc++;
           BUS.rw = 0;
@@ -258,14 +258,14 @@ class CPU_t {
           func = control_func;
           break;
           
-        case (INSTRUCTION.STAX << 4): // MOVE ACC TO MEM #1
+        case (OPCODE.STAX << 4): // MOVE ACC TO MEM #1
           alu = BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           state++;
           break;
-        case (INSTRUCTION.STAX << 4) + 1: // MOVE ACC TO MEM #2
+        case (OPCODE.STAX << 4) + 1: // MOVE ACC TO MEM #2
           alu = alu + (BUS.data << 8) + x;
           pc++;
           BUS.rw = 0;
@@ -275,14 +275,14 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.STX << 4): // MOVE X TO MEM #1
+        case (OPCODE.STX << 4): // MOVE X TO MEM #1
           alu = BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           state++;
           break;
-        case (INSTRUCTION.STX << 4) + 1: // MOVE X TO MEM #2
+        case (OPCODE.STX << 4) + 1: // MOVE X TO MEM #2
           alu = alu + (BUS.data << 8);
           pc++;
           BUS.rw = 0;
@@ -292,14 +292,14 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.STY << 4): // MOVE Y TO MEM #1
+        case (OPCODE.STY << 4): // MOVE Y TO MEM #1
           alu = BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           state++;
           break;
-        case (INSTRUCTION.STY << 4) + 1: // MOVE Y TO MEM #2
+        case (OPCODE.STY << 4) + 1: // MOVE Y TO MEM #2
           alu = alu + (BUS.data << 8);
           pc++;
           BUS.rw = 0;
@@ -309,19 +309,19 @@ class CPU_t {
           func = control_func;
         break;
 
-        case (INSTRUCTION.BEQ << 4): // BNE TO MEM #1
+        case (OPCODE.BEQ << 4): // BNE TO MEM #1
           alu = (byte) BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           if ((ps & STATUS.ZERO) > 0) {
-            state = (INSTRUCTION.BEQ << 4) + 1;
+            state = (OPCODE.BEQ << 4) + 1;
           } else {
             state = PROCESSOR.FTCH << 4;
             func = control_func;
           }
           break;
-        case (INSTRUCTION.BEQ << 4) + 1: // IF NOT EQ 0
+        case (OPCODE.BEQ << 4) + 1: // IF NOT EQ 0
           alu = alu + pc + 0;
           pc = alu;
           BUS.rw = 1;
@@ -330,19 +330,19 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.BNE << 4): // BNE TO MEM #1
+        case (OPCODE.BNE << 4): // BNE TO MEM #1
           alu = (byte) BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           if ((ps & STATUS.ZERO) == 0) {
-            state = (INSTRUCTION.BNE << 4) + 1;
+            state = (OPCODE.BNE << 4) + 1;
           } else {
             state = PROCESSOR.FTCH << 4;
             func = control_func;
           }
           break;
-        case (INSTRUCTION.BNE << 4) + 1: // IF NOT EQ 0
+        case (OPCODE.BNE << 4) + 1: // IF NOT EQ 0
           alu = alu + pc + 0;
           pc = alu;
           BUS.rw = 1;
@@ -351,14 +351,14 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.JMP << 4): // JMP TO MEM #1
+        case (OPCODE.JMP << 4): // JMP TO MEM #1
           alu = BUS.data;
           pc++;
           BUS.rw = 1;
           BUS.addr = pc;
           state++;
           break;
-        case (INSTRUCTION.JMP << 4) + 1:  // JMP TO MEM #2
+        case (OPCODE.JMP << 4) + 1:  // JMP TO MEM #2
           alu = alu + (BUS.data << 8) + 0;
           pc = alu;
           BUS.rw = 1;
@@ -367,7 +367,7 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.PHA << 4): // PUSH ACC IN STACK
+        case (OPCODE.PHA << 4): // PUSH ACC IN STACK
           sp--;
           BUS.rw = 0;
           BUS.addr = sp;
@@ -376,12 +376,12 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.PLA << 4): // POP STACK ACC #1
+        case (OPCODE.PLA << 4): // POP STACK ACC #1
           BUS.rw = 1;
           BUS.addr = sp;
           state++;
           break;
-        case (INSTRUCTION.PLA << 4) + 1: // POP STACK ACC #2
+        case (OPCODE.PLA << 4) + 1: // POP STACK ACC #2
           a = BUS.data;
           sp++;
           BUS.rw = 1;
@@ -390,19 +390,19 @@ class CPU_t {
           func = control_func;
           break;
 
-        case (INSTRUCTION.RTI << 4): // POP STACK hi(PC) #1
+        case (OPCODE.RTI << 4): // POP STACK hi(PC) #1
           BUS.rw = 1;
           BUS.addr = sp;
           state++;
           break;
-        case (INSTRUCTION.RTI << 4) + 1: // POP lo(PC) ACC #2
+        case (OPCODE.RTI << 4) + 1: // POP lo(PC) ACC #2
           alu = BUS.data;
           sp++;
           BUS.rw = 1;
           BUS.addr = sp;
           state++;
           break;
-        case (INSTRUCTION.RTI << 4) + 2: // JMP TO RET ADDRESS
+        case (OPCODE.RTI << 4) + 2: // JMP TO RET ADDRESS
           alu = alu + (BUS.data << 8) + 0;
           pc = alu;
           ps |= STATUS.NMIB;
@@ -414,7 +414,7 @@ class CPU_t {
           func = control_func;
           break;
           
-        case (INSTRUCTION.CLC << 4): // CLEAR CARY
+        case (OPCODE.CLC << 4): // CLEAR CARY
           ps &= ~STATUS.CARY; 
           BUS.rw = 1;
           BUS.addr = pc;
@@ -423,9 +423,6 @@ class CPU_t {
           break;
       }
     };
-    
-    state = PROCESSOR.RST << 4;
-    func = control_func;
   }
 
   void clock() {

@@ -10,12 +10,12 @@ setup:
   lda #0
 i:
   pha
-  lda #1
-  sta $0902
+  lda #42
+  sta $0903
   pla
   clc
   adc #1
-  cmp #25
+  cmp #3
   bne i
   
   ldx #0
