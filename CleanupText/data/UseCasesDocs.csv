@@ -1,0 +1,270 @@
+"
+?A monthly field activity report for GM built using a number of tables from the restitution data.
+
+"
+"
+?we do not use
+"
+"
+?we do not use it
+"
+"
+?Data quality / data controlSFE and IT use this module for data quality and control : 
+Automatic Extraction of missing field : Specialty / brick / latitud / longitud / etc 
+Making report for the Med Rep to optimize data quality  : 
+consent capture and automatic list for the rep. 
+Missing PDP by product / line of the rep 
+
+
+
+
+"
+"
+We use the restitution environment to link it with our sales (salescube was not working with our shcema). We use the activity cube for activity report but we need to link sales and activity at some points. 
+"
+"
+?Today the extraction of dr list and the update of the doctor is a very long task and nothing is automatize. We are working on a project to simplify some processes. Brazil already performed a project to optimize this task based on python and extract of database restitution. 
+"
+"
+??We use the database restitution environment to make calculation : 
+
+
+PDP calculation Extract witch get us a note and help us to define main target (A/B)
+Bonus calculation extract
+Overlap 
+Doctor panel / product "
+"
+?Some ID are not link in the report but are in the database restitution environemnt.Example : We need to update the AddresseID of the HCO but it is not possible to get a good data from the reporting. 
+We are using the database restitution environment to link HCP/HCO/IDaddressHCP/IDadressHCO 
+
+
+
+
+"
+"
+Analyse Activity and Activity vs SalesShare information with MeD Reps and Reginal Managers"
+"
+?Use it to calculate MCCP based on NextGen segmentation Rules
+"
+"
+?Bespoke performance reports for local management
+"
+"
+??In the data restitution environment, some data is kept while deleted in the CRM. (ex call history). we also ask some improvment to get a historic of call with IDadress link. We need to calculate real FTE of the rep and we need extract of the CRM to calculate it.
+
+It's very useful when we prepare 5Y plan
+"
+"
+?Get Lynx Data source to be loaded in our DataLake automatically (talend Job):Source data for all our Business Activity reports.
+Source data for checking User, Usage, Veeva & iPad version, Sync issue, allocation, new FY changes...
+Source data to be combined with other sources and build Power Bi report with them.
+"
+"
+?Lynx do not keep historic data.We use the Restitution DB as a source of data we load in our local DataLake.
+Lynx is our Master reference source used to combine data from other sources.
+It is important for us to keep some historical data that change during the FY and especially at the new FY setup. ex: HCP target, Product reference, product allocation, Territory allocation.
+The historic data allow us to compare one FY to another for various needs such the FF bonus calculation scheme or data analysis consitency between FY. 
+"
+"
+?We use the Lynx Restitution DB as the source to develop new Digital eChannel.We need HCP, HCO, User data to be able to open new eChannel communication with HCP.
+ex: emailling, Messaging, SMS.
+Few eChannel activity data have to be post back automatically to Lynx to track all activity into Lynx. This POST interface is not yet existed. Only the GET one by using the Restitution DB.
+"
+"
+Our SFE Team is using Wave Reporting. "
+"
+?The CRM systems (restitution db respectively) is the single source of information for HCOs, HCPs, Events, products in promotion. ?For integration with the Business Processes Management system the following information is used:
+Product information - for building the product allocation, structure and responsibilities, used in the approval processes. 
+HCO and HCP contact details for event participation, sponsorship, donations - getting aprovals and generate payments. 
+Medical Events information - used for allocating resources and manage budgeting and organization.
+Event attendance - allocating the Transfer of Value to individual HCP and HCO
+Surveys data is used for Event Speakers forms - needed for regulatory purposes.  
+
+
+"
+"
+?Based on information gathered in a special survey - collects additional data for samples storage conditions used for regulatory purposes.
+
+"
+"
+?The data is used for additional CLM analysis missing in Waves:
+Of Media usage –       Respect of product priorities, how often the Rep represents all products       etcOf Approved email usage       and data – Response time of the doctor, interest taken, clicks, drill of       usage data by specialty and productOf remote detailing –       data for the media usage in the remote detailing combined with specific       survey in LynX that the Reps fill with the interest of the doctors taken,       questions from doctors, ease of use during the session etc
+
+"
+"
+?The followig data is managed in the ETK process:The sectorization       data – regions, territories, bricks and their structure and connectionsThe field force organization       data – using the Role LynX data in Restitution for Regional managers and       their Medreps with the LynX specifics as teams, public groups, type of       licenses, admin role etc.The product mix       for the RM and MRsThe product       entities in LynX as – detailed products, inventory products and       sample productsPharmacies names and other data       thus allowing our Reps to fix wrong names of Pharmacies coming from the       distributorsHCP targetand MC Cycle       plansHCP daetails dataHCO details dataMedical EventsEvents participation
+The data is used for various reports: 
+ 1. Sales analysis according to the team organization
+ 2. Pharmacy promo activities and sales
+ 3. Products allocation
+ 4. HCP and HCO collaboration
+ 5. Events analysis
+
+"
+"
+?Data for HCPs and HCOs is used for generating EFPIA reports. - HCPs' Events participation and allocation of TOVs
+
+ - HCP and HCO sponsorships, donations and other activities related to TOV
+ - HCPs' consent daat used for reports and event management
+
+"
+"
+?We are using these Activity data to Power BI Reports Monthly report to GM / Sales
+?
+"
+"
+?We use the Restitution database to pull HCP and HCO data to our local application. The data is used for getting GDPR approvals, medical events request forms, events speakers contracts automatic generation.
+"
+"
+?We would like to use the restitution database to extract data for operational reports that are not covered by wave. We face optimisation issues (very poor response time) and we can't use the database for this use case yet.
+"
+"
+?Not in use
+"
+"
+?cycle plangeneration for our sales field force every 45 days.?cycle plangeneration for our oncology field force every 30 days.retrievingmedical events data on daily basis to be linked with our local logistics module.
+
+
+
+
+
+
+"
+"
+?We download the events comiing from Veeva to then send that data to Concur. 
+We send who can submit who can submit expenses for that event. We create the meeting (event) using the event ID from Veeva, date and name as well. 
+Organizer and Participants"
+"
+?Account ID used in Data load utility to upload consent information into Veeva
+"
+"
+?Download data to be able to modify locally then load back in the Data Load Utility
+
+"
+"
+?We currently don't use it.
+"
+"
+?Expenses are entered in Lynx and transfered to the local expenses system.
+"
+"
+??We are collecting several information for compliance reason in Lynx, incl. planned costs. This costs are extracted to the ERP-System with all needed information (ERP-Project, type of expense, amount, value, event title, ...) and a purchase request will be launched within the ERP-System.
+The status of the ERP-System has to be given back to Lynx for the Event validation.
+As frequency I mentioned daily, but this should be more interactiv like hourly. But this was not selectable. Perhaps it is not feasible with this construction of restitution database. Is an online-access to Lynx-data possible to increase the number data-exchanges.
+Additionally the related documents has to be exported to the document management system with a link to the ERP-purchase requests to have a proper documentation for the event within the ERP-system.
+
+
+
+"
+"
+?We have legacy systems that need some sales teams       data such as: structure of the teams and cycles information. As we do not       have integration through API, we use the Restitution database to provide       these data to them.
+
+
+"
+"
+?As we do not have all the Lynx CRM data       available in the WAVE cubes, the SFE team use the Restitution environment       to collect some data of Lynx CRM then enrich their analysis in PBI.
+
+"
+"
+?A pyhton task       created by SFE team in order to automatize the MCCP process and generate       the CSV files accordingly to be uploaded in the Lynx CRM. 
+
+"
+"
+?In order to avoidduplicated       “samples transaction” and LOT in the Lynx CRM, we have a step in the integration       between our ERP x Veeva to validate it based on the Restitution database.       This validation is done through the tables: SAMPLE_TRANSACTION_LATAM /       SAMPLE_LOT_LATAM / PRODUCT_CATALOG_LATAM.
+"
+"
+?This dashboard aims to support the SFE team on       the control of Data quality in the Lynx CRM data. The following data has       been evaluating through Restitution database: HCPs registration ; Brick x       Territory ; Calls ; Format of CRM (National ID for HCPs) ; Type of HCP.
+"
+"
+?The SFE team build a PBI dataflow of some tables from Restitution database. It aims to unify the extraction of the data in one step to not overload the local server, to ensure the availability of the data in the PBI infrastructure and improve the performance when the reports are executed.
+"
+"
+?Interfaces
+"
+"D?ata integration between ? Lynx and other local and external services (Proxima, Financial Infromation Systems, Procurement management, etc.)
+"
+"
+Additional operation data for SFE department to help them to perfrom business operations (out of BI scope)
+?
+"
+"
+Extra reporting in addition to Wave (not all of local rules and calculations can be applied to Wave, this is a reason to get additional data into Power BI locally)
+
+"
+"
+We are using these Activity data to Power BI Reports Monthly report to GM / FSM / AM / Sales
+
+
+"
+"
+?User database restitution for extract data calculation and activity analysis
+"
+"
+?
+
+Sample stock calculation: to check Rep’s stocks to organize new shipments, for internal Audits etc.Check privacy data collection: to have a list of HCPs without privacy data to send to AM.List of My Target accounts to prepare Cycle Plan files to send to support.List of  HCPs and Pharmacies in My Target to check updating of files from Reps in case of review.Number of calls and accounts seen each month, calls per product and Company for Finance purpose and for Marketing researches.Extraction of doubled accounts to merge in Veeva (temporary account merged into final one inserted by Iqvia)Hospital acivities monitoringBesides we use for BI intelligence porpouses to integrate some analisys that are not available in WAVE due to local needs.
+Finally, we use DB restituion as data source to interface data with other systems (MyServier)
+"
+"
+??The restitution environment is our data source for all our LOCAL Power BI Activity Reports. We created and run an automatic SQL task everyday to get all activity-related data from restitution: targets, calls, medical events, TOTs, samples usage, etc., and feed them to our Power BI reports.
+
+Saying that restitution environment is important to us is already an understatement ??."
+"
+?Our salesforce employees (Medical Representatives and Managers) enter all their expenses in the Expenses module of Salesforce, and we get these data from the restitution environment.
+We created an automatic SLQ task that runs everyday. This imports all expense data from the restitution environment and saves them into our LOCAL Expense System, which processes the expense reimbursements of our field-based employees.
+Formerly, our Accounting team manually encodes these expenses in our local system, but with the help of Salesforce and restitution database, data import has become automatic. 
+Saying that restitution environment is important to us is already an understatement ??."
+"
+
+downloading of selected data into local db; data from local db is used in interfaces,  monthly reports for representatives, ad hoc reports and analyses, for data validation
+"
+"
+??To integrate Lynx data into local data warehouse and then to services local applications, digital projects, BI reports and so on, for example: get HCP data and provide to local event management system, E-Communication and so on
+"
+"
+??According to the doctor suvery on different products and local calculation rules from SFE, we can calcuate the HCP PDP level( potential, attitude, segement) from backend automatically, and then generate the formal template to give HQ support team to update.
+Survey data: increament by daily
+PDP calculation by quarterly following the local MCCP period
+"
+"
+?To automatically generate a set of data templates around MCCP based on previous MCCP data, TSF data,new territory structure and so on. Local admin can export data to formal csv file via RESTFull API and upload to Lynx;
+
+
+"
+"
+?To satisfy and respond quickly to local data analysis requirement from different business department. So we need to combine different data source to generate our local data mart or cube and use PowerBI to create required anasyis report.
+"
+"
+?We do not know how to use it
+"
+"
+?We use power BI reporting  for monthly/weekly reports for Country Operations,Sales and Marketing team.
+"
+"
+?Share information with Sales director  and managers.
+"
+"
+?The Sales team inserts daily sales data sent from the wholeseller and creates a daily sales report. Finance team and GM checks the report every week/month.
+
+"
+"
+?The Restitution DB isCRITICALfor us. It is the master data source for all Lynx Data (Activity, Medical Event, Territory Hierrarchy, Product Allocation, ...)All our Business BI reports are using that source which is also intergated with otehr data (HR, Sales, Tender, Bonus, ...).
+We copy the data we need in our local DataLake to be able to build complex BI report on demand. 
+"
+"
+?Did not know that support existed for this feature
+
+"
+"
+?We do not use
+"
+"
+?Every day at 11:30, the ECM (Onbase) extracts the collaborations with clients and organizations (Events) and generates the documentation (Request Form, compliance) Travel Agency Requests and Documentation that must be signed by the HCP and HCO ( Contracts and Collaborations) signed with EDATALIA (similar to Docusign), is a critical business process in Spain.
+"
+"
+?Currently under development, Extraction of all HCO and HCP collaborations in Spain, for the generation of the EFPIA report with the amounts on each professional included in Lynx. CRITICAL for The Business (Compliance)
+"
+"
+?Currently we are fulfilling our reporting needs via Lynx & wave reports.
+
+May like to use Restoration database for hisoric data snapshot reporting and/or for fast report processing, as Lynx /BI reports are slow. To use this DB will require some basic guidance."
