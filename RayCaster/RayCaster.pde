@@ -5,8 +5,8 @@ public static _Scene          Scene;
 HUD hud = new HUD();
 
 void setup() {
-  size(1024, 768, P3D);
-  //fullScreen(P3D);
+  //size(640, 400, P3D);
+  fullScreen(P3D);
   frameRate(60);
   
   ScriptFactory = this.new _ScriptFactory();
@@ -21,7 +21,7 @@ void setup() {
 }
 
 void draw() {
-  Scene.update(1.0 / frameRate);
+  Scene.update(1.0 / 60);
   Scene.draw();
   hud.draw();
 }

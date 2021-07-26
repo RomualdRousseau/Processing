@@ -48,8 +48,8 @@ public class _Scene extends Entity
   public void init(int w, int h) {
     this.frameBuffer = createImage(w, h, RGB);
     this.zbuffer = new float[w][h];
-    this.behaviors.add(ScriptFactory.newInstance("Main"));
     this.reload();
+    this.behaviors.add(ScriptFactory.newInstance("Main"));
   }
   
   public void reload() {
@@ -75,9 +75,9 @@ public class _Scene extends Entity
     super.start();
     
     this.visitedVoxels = new boolean[this.map.length][this.map[0].length][this.map[0][0].length];
-    for(int k = 0; k < this.map.length; k++) {
-       for(int i = 0; i < this.map[k].length; i++) {
-         for(int j = 0; j < this.map[k][i].length; j++) {
+    for(int k = 0; k < this.visitedVoxels.length; k++) {
+       for(int i = 0; i < this.visitedVoxels[k].length; i++) {
+         for(int j = 0; j < this.visitedVoxels[k][i].length; j++) {
             this.visitedVoxels[k][i][j] = false;
          }
        }
@@ -95,9 +95,9 @@ public class _Scene extends Entity
   public void update(float dt) {
     super.update(dt);
     
-    for(int k = 0; k < this.map.length; k++) {
-       for(int i = 0; i < this.map[k].length; i++) {
-         for(int j = 0; j < this.map[k][i].length; j++) {
+    for(int k = 0; k < this.visitedVoxels.length; k++) {
+       for(int i = 0; i < this.visitedVoxels[k].length; i++) {
+         for(int j = 0; j < this.visitedVoxels[k][i].length; j++) {
              if (abs(this.camera.transform.location.z - k) < 3 &&  abs(this.camera.transform.location.y - i) < 3 && abs(this.camera.transform.location.x - j) < 3) {
               this.visitedVoxels[k][i][j] = true;
              }
@@ -169,7 +169,7 @@ public class _Scene extends Entity
     java.util.Arrays.sort(spriteOrders);
 
     this.frameBuffer.loadPixels();
-
+    
     for (int y = 0; y < this.frameBuffer.height; y++) {
       for (int x = 0; x < this.frameBuffer.width; x++) {
 
@@ -274,11 +274,16 @@ public class _Scene extends Entity
         continue;
       }
 
+      float shading = 0;
       int voxelX = int(sprite.transform.location.x);
       int voxelY = int(sprite.transform.location.y);
       int voxelZ = int(sprite.transform.location.z);
-      float shading = map(this.shadowMap[voxelZ][voxelY][voxelX], 0, 9, 0, 1.0);
-
+      if (voxelZ >= 0 && voxelZ < this.shadowMap.length
+        && voxelY >= 0 && voxelY < this.shadowMap[0].length
+        && voxelX >= 0 && voxelX < this.shadowMap[0][0].length) {
+        shading = map(this.shadowMap[voxelZ][voxelY][voxelX], 0, 9, 0, 1.0);
+        }
+      
       return lerpColor(color(0), diffuse, shading);
     }
 

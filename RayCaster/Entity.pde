@@ -1,6 +1,6 @@
 public class Transform
 {
-  public PVector location = new PVector(0, 0, 0);
+  public PVector location = new PVector(0, 0, 1.5);
   public PVector rotation = new PVector(0, 0, 0);
 }
 
@@ -96,10 +96,12 @@ public abstract class Entity
       
       PVector normTarget = target.copy().normalize();
       CastResult result = castRay(this.getScene().map, this.transform.location, normTarget);
-      float distancewithNearestWall = PVector.mult(normTarget, result.z).magSq();
-      
-      if(distanceWithTarget < distancewithNearestWall) { 
-        return target;
+      if (result != null) {
+        float distancewithNearestWall = PVector.mult(normTarget, result.z).magSq();
+        
+        if(distanceWithTarget < distancewithNearestWall) { 
+          return target;
+        }
       }
     }
     
