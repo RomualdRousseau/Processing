@@ -17,7 +17,7 @@ private class SpriteOrder implements Comparable<SpriteOrder>
   public float distance;
 
   public int compareTo(SpriteOrder b) {
-    return int(this.distance - b.distance);
+    return (this.distance - b.distance) < 0 ? -1 : 1;
   }
 }
 
@@ -30,6 +30,7 @@ public class _Scene extends Entity
 
   public int[][][] map;
   public int[][][] shadowMap;
+  public boolean[][][] visitedVoxels;
   public PVector environmentLight = new PVector(0, -1, 0); 
   public float environmentLightMin = 0.7;
   public float environmentLightMax = 1.0;
@@ -54,7 +55,7 @@ public class _Scene extends Entity
   public void reload() {
     this.map = null;
     this.shadowMap = null;
-    
+    this.visitedVoxels = null;
     this.textures = new ArrayList<PImage>();
     this.sprites = new ArrayList<Sprite>();
     this.globalVariables = new HashMap<String, Object>();
@@ -72,6 +73,15 @@ public class _Scene extends Entity
 
   public void start() {
     super.start();
+    
+    this.visitedVoxels = new boolean[this.map.length][this.map[0].length][this.map[0][0].length];
+    for(int k = 0; k < this.map.length; k++) {
+       for(int i = 0; i < this.map[k].length; i++) {
+         for(int j = 0; j < this.map[k][i].length; j++) {
+            this.visitedVoxels[k][i][j] = false;
+         }
+       }
+    }
 
     for(Sprite sprite: this.sprites) {
       sprite.parent = this;
@@ -85,6 +95,16 @@ public class _Scene extends Entity
   public void update(float dt) {
     super.update(dt);
     
+    for(int k = 0; k < this.map.length; k++) {
+       for(int i = 0; i < this.map[k].length; i++) {
+         for(int j = 0; j < this.map[k][i].length; j++) {
+             if (abs(this.camera.transform.location.z - k) < 3 &&  abs(this.camera.transform.location.y - i) < 3 && abs(this.camera.transform.location.x - j) < 3) {
+              this.visitedVoxels[k][i][j] = true;
+             }
+         }
+       }
+    }
+
     for(Sprite sprite: this.sprites) {
       sprite.update(dt);
     }

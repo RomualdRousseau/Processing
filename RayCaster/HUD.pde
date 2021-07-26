@@ -8,10 +8,6 @@ private class HUD
     return (int) Scene.globalVariables.get("hero.gold");
   }
   
-  private boolean isVisited(int i, int j) {
-    return ((boolean[][]) Scene.globalVariables.get("map.visited"))[i][j];
-  }
-  
   public void draw() {
     final float w = width / Scene.map[1].length;
     final float h = height / Scene.map[1].length;
@@ -53,7 +49,7 @@ private class HUD
       fill(255, 255, 255, 128);
       for (int i = 0; i < Scene.map[1].length; i++) {
         for (int j = 0; j < Scene.map[1][i].length; j++) {
-          if (Scene.map[1][i][j] == 0 && isVisited(i, j)) {
+          if (Scene.map[1][i][j] == 0 && Scene.visitedVoxels[1][i][j]) {
             rect(j * w, i * h, w, h);
           }
         }

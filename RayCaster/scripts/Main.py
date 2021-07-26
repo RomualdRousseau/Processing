@@ -67,7 +67,6 @@ class Main(Behavior):
 		scene.camera.transform.location = PVector(0.5, 0.5, 1.5).add(dungeon.getStartRoom().position)
 		scene.camera.direction = PVector(1, 1, 0).normalize()
 		scene.camera.behaviors.add(ScriptFactory.newInstance("Hero"))
-		scene.camera.behaviors.add(ScriptFactory.newInstance("Map"))
 		
 		# Generate furnitures
     

@@ -529,7 +529,8 @@ public class _ScriptFactory {
     PySystemState sys = Py.getSystemState();
     sys.path.append(new PyString(scriptPath));
 
-    try (PythonInterpreter interpreter = new PythonInterpreter()) {
+    try {
+      PythonInterpreter interpreter = new PythonInterpreter();
 
       for (File filename : listFiles(scriptPath)) {
         if (!filename.getName().endsWith(".py")) {
@@ -542,6 +543,8 @@ public class _ScriptFactory {
         interpreter.exec("from " + scriptName + " import " + scriptName);
         this.scriptClasses.put(scriptName, interpreter.get(scriptName));
       }
+      
+      interpreter.close();
     }
     catch(Exception x) {
       x.printStackTrace();
