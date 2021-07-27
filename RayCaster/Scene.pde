@@ -2,12 +2,12 @@ public final static int textureWidth = 64;
 public final static int textureHeight = 64;
 
 public final static PVector[] normals = {
-  new PVector(-1,  0,  0),
-  new PVector( 1,  0,  0),
-  new PVector( 0, -1,  0),
-  new PVector( 0,  1,  0),
-  new PVector( 0,  0, -1),
-  new PVector( 0,  0,  1)
+  new PVector(-1, 0, 0),
+  new PVector( 1, 0, 0),
+  new PVector( 0, -1, 0),
+  new PVector( 0, 1, 0),
+  new PVector( 0, 0, -1),
+  new PVector( 0, 0, 1)
 };
 
 private class SpriteOrder implements Comparable<SpriteOrder>
@@ -31,27 +31,27 @@ public class _Scene extends Entity
   public int[][][] map;
   public int[][][] shadowMap;
   public boolean[][][] visitedVoxels;
-  public PVector environmentLight = new PVector(0, -1, 0); 
+  public PVector environmentLight = new PVector(0, -1, 0);
   public float environmentLightMin = 0.7;
   public float environmentLightMax = 1.0;
-  
+
   public ArrayList<PImage> textures;
   public ArrayList<Sprite> sprites;
   public HashMap<String, Object> globalVariables;
 
-  public Camera camera; 
+  public Camera camera;
 
   public _Scene(PApplet applet) {
     this.applet = applet;
   }
-  
+
   public void init(int w, int h) {
     this.frameBuffer = createImage(w, h, RGB);
     this.zbuffer = new float[w][h];
     this.reload();
     this.behaviors.add(ScriptFactory.newInstance("Main"));
   }
-  
+
   public void reload() {
     this.map = null;
     this.shadowMap = null;
@@ -59,75 +59,67 @@ public class _Scene extends Entity
     this.textures = new ArrayList<PImage>();
     this.sprites = new ArrayList<Sprite>();
     this.globalVariables = new HashMap<String, Object>();
-    
+
     this.camera = new Camera();
   }
-  
+
   public _Scene getScene() {
-      return (_Scene) this;
+    return (_Scene) this;
   }
-  
+
   public void addTexture(String fileName) {
     this.textures.add(loadImage(fileName));
   }
 
   public void start() {
     super.start();
-    
-    this.visitedVoxels = new boolean[this.map.length][this.map[0].length][this.map[0][0].length];
-    for(int k = 0; k < this.visitedVoxels.length; k++) {
-       for(int i = 0; i < this.visitedVoxels[k].length; i++) {
-         for(int j = 0; j < this.visitedVoxels[k][i].length; j++) {
-            this.visitedVoxels[k][i][j] = false;
-         }
-       }
-    }
 
-    for(Sprite sprite: this.sprites) {
+    for (Sprite sprite : this.sprites) {
       sprite.parent = this;
       sprite.start();
     }
-    
+
     this.camera.parent = this;
     this.camera.start();
+    
+    this.visitedVoxels = new boolean[this.map.length][this.map[0].length][this.map[0][0].length];
+    //for (int k = 0; k < this.visitedVoxels.length; k++) {
+    //  for (int i = 0; i < this.visitedVoxels[k].length; i++) {
+    //    for (int j = 0; j < this.visitedVoxels[k][i].length; j++) {
+    //      this.visitedVoxels[k][i][j] = false;
+    //    }
+    //  }
+    //}
   }
-  
+
   public void update(float dt) {
     super.update(dt);
-    
-    for(int k = 0; k < this.visitedVoxels.length; k++) {
-       for(int i = 0; i < this.visitedVoxels[k].length; i++) {
-         for(int j = 0; j < this.visitedVoxels[k][i].length; j++) {
-             if (abs(this.camera.transform.location.z - k) < 3 &&  abs(this.camera.transform.location.y - i) < 3 && abs(this.camera.transform.location.x - j) < 3) {
-              this.visitedVoxels[k][i][j] = true;
-             }
-         }
-       }
-    }
 
-    for(Sprite sprite: this.sprites) {
+    for (Sprite sprite : this.sprites) {
       sprite.update(dt);
     }
-    
+
     this.camera.update(dt);
-    
-    for(int i = this.sprites.size() -1; i >= 0; i--) {
+
+    for (int i = this.sprites.size() -1; i >= 0; i--) {
       Sprite sprite = this.sprites.get(i);
       if (sprite.isTrashed) {
         this.sprites.remove(i);
       }
     }
+    
+    this.updateVisitedVoxels();
   }
-  
+
   public int collide(Entity entity) {
     int result = 0;
 
-    for(PVector step: normals) {
-      
+    for (PVector step : normals) {
+
       int voxelX = int(entity.transform.location.x) + int(step.x);
       int voxelY = int(entity.transform.location.y) + int(step.y);
       int voxelZ = int(entity.transform.location.z) + int(step.z);
-      
+
       if (voxelZ >= 0 && voxelZ < map.length
         && voxelY >= 0 && voxelY < map[0].length
         && voxelX >= 0 && voxelX < map[0][0].length
@@ -136,20 +128,20 @@ public class _Scene extends Entity
         float colX = int(entity.transform.location.x) + int((step.x + 1) / 2) - entity.transform.location.x;
         float colY = int(entity.transform.location.y) + int((step.y + 1) / 2) - entity.transform.location.y;
         float colZ = int(entity.transform.location.z) + int((step.z + 1) / 2) - entity.transform.location.z;
-        
+
         float d = abs(colX * step.x + colY * step.y + colZ * step.z);
         float r = abs(entity.bbox.x * step.x + entity.bbox.y * step.y + entity.bbox.z * step.z);
-        if(d < r) {
+        if (d < r) {
           float forceMag = r - d;
           PVector force = step.copy().mult(forceMag);
           entity.transform.location.sub(force);
           result |= 1;
         }
       }
-      
+
       result <<= 1;
     }
-    
+
     return result >> 1;
   }
 
@@ -169,7 +161,7 @@ public class _Scene extends Entity
     java.util.Arrays.sort(spriteOrders);
 
     this.frameBuffer.loadPixels();
-    
+
     for (int y = 0; y < this.frameBuffer.height; y++) {
       for (int x = 0; x < this.frameBuffer.width; x++) {
 
@@ -195,9 +187,9 @@ public class _Scene extends Entity
       this.zbuffer[x][y] = 1000;
       return color(0, 128, 255);
     }
-    
+
     this.zbuffer[x][y] = result.z;
-    
+
     PVector uvmap;
     if (result.side == 0) {
       uvmap = new PVector(this.camera.transform.location.y + rayDir.y * result.z, this.camera.transform.location.z + rayDir.z * result.z, 0);
@@ -253,7 +245,7 @@ public class _Scene extends Entity
 
     for (int i = 0; i < min(10, spriteOrders.length); i++) {
       Sprite sprite = spriteOrders[i].sprite;
-      
+
       PVector transform = spriteOrders[i].transform;
       if (!sprite.isVisible || transform.y <= 0 || transform.y >= zbuffer[x][y]) {
         continue;
@@ -282,11 +274,20 @@ public class _Scene extends Entity
         && voxelY >= 0 && voxelY < this.shadowMap[0].length
         && voxelX >= 0 && voxelX < this.shadowMap[0][0].length) {
         shading = map(this.shadowMap[voxelZ][voxelY][voxelX], 0, 9, 0, 1.0);
-        }
-      
+      }
+
       return lerpColor(color(0), diffuse, shading);
     }
 
     return background;
+  }
+  
+  private void updateVisitedVoxels() {
+    int k = int(this.camera.transform.location.z);
+    for (int i = max(int(this.camera.transform.location.y) - 2, 0); i <= min(int(this.camera.transform.location.y) + 2, this.visitedVoxels[k].length); i++) {
+      for (int j = max(int(this.camera.transform.location.x) - 2, 0); j <= min(int(this.camera.transform.location.x) + 2, this.visitedVoxels[k][i].length); j++) {
+        this.visitedVoxels[k][i][j] = true;
+      }
+    }
   }
 }

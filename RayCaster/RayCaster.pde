@@ -21,7 +21,7 @@ void setup() {
 }
 
 void draw() {
-  Scene.update(1.0 / 60);
+  Scene.update(1.0 / max(30, frameRate));
   Scene.draw();
   hud.draw();
 }
