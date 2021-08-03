@@ -83,13 +83,6 @@ public class _Scene extends Entity
     this.camera.start();
     
     this.visitedVoxels = new boolean[this.map.length][this.map[0].length][this.map[0][0].length];
-    //for (int k = 0; k < this.visitedVoxels.length; k++) {
-    //  for (int i = 0; i < this.visitedVoxels[k].length; i++) {
-    //    for (int j = 0; j < this.visitedVoxels[k][i].length; j++) {
-    //      this.visitedVoxels[k][i][j] = false;
-    //    }
-    //  }
-    //}
   }
 
   public void update(float dt) {
@@ -163,12 +156,15 @@ public class _Scene extends Entity
     this.frameBuffer.loadPixels();
 
     for (int y = 0; y < this.frameBuffer.height; y++) {
+      
+      float rayDirY = camera.focal.y * (2.0 * float(y) / float(frameBuffer.height) - 1.0);
+      
       for (int x = 0; x < this.frameBuffer.width; x++) {
 
         PVector rayDir = new PVector(
           camera.focal.x * (2.0 * float(x) / float(frameBuffer.width) - 1.0),
           1.0f,
-          camera.focal.y * (2.0 * float(y) / float(frameBuffer.height) - 1.0));
+          rayDirY);
 
         color pixel = rayCastSprite(spriteOrders, x, y, rayDir, castRayWall(x, y, matmul(rayDir, lookAtMatrix)));
         this.frameBuffer.pixels[y * frameBuffer.width + x] = pixel;
@@ -284,8 +280,8 @@ public class _Scene extends Entity
   
   private void updateVisitedVoxels() {
     int k = int(this.camera.transform.location.z);
-    for (int i = max(int(this.camera.transform.location.y) - 2, 0); i <= min(int(this.camera.transform.location.y) + 2, this.visitedVoxels[k].length); i++) {
-      for (int j = max(int(this.camera.transform.location.x) - 2, 0); j <= min(int(this.camera.transform.location.x) + 2, this.visitedVoxels[k][i].length); j++) {
+    for (int i = max(int(this.camera.transform.location.y) - 2, 0); i <= min(int(this.camera.transform.location.y) + 2, this.visitedVoxels[k].length - 1); i++) {
+      for (int j = max(int(this.camera.transform.location.x) - 2, 0); j <= min(int(this.camera.transform.location.x) + 2, this.visitedVoxels[k][i].length - 1); j++) {
         this.visitedVoxels[k][i][j] = true;
       }
     }

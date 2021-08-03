@@ -1,74 +1,85 @@
-final int ACTION_FORWARD       = (1 << 0);
-final int ACTION_BACKWARD      = (1 << 1);
-final int ACTION_TURN_RIGHT    = (1 << 2);
-final int ACTION_TURN_LEFT     = (1 << 3);
-final int ACTION_STRAFE_RIGHT  = (1 << 4);
-final int ACTION_STRAFE_LEFT   = (1 << 5);
-final int ACTION_SHOOT         = (1 << 6);
-final int ACTION_OPEN          = (1 << 7);
-final int ACTION_UP            = (1 << 8);
-final int ACTION_DOWN          = (1 << 9);
-final int ACTION_SHOW_MAP      = (1 << 10);
+final int ACTION_FORWARD         = (1 << 0);
+final int ACTION_BACKWARD        = (1 << 1);
+final int ACTION_TURN_RIGHT      = (1 << 2);
+final int ACTION_TURN_LEFT       = (1 << 3);
+final int ACTION_STRAFE_RIGHT    = (1 << 4);
+final int ACTION_STRAFE_LEFT     = (1 << 5);
+final int ACTION_FIRE            = (1 << 6);
+final int ACTION_OPEN            = (1 << 7);
+final int ACTION_LOOK_UP         = (1 << 8);
+final int ACTION_LOOKP_DOWN      = (1 << 9);
+final int ACTION_SHOW_MAP        = (1 << 10);
 
 public class _Input
 {
   private int keyPressedMask = 0;
 
   public void init() {
+    com.jogamp.newt.opengl.GLWindow r= (com.jogamp.newt.opengl.GLWindow) surface.getNative();
+    r.setPointerVisible(false);
+    r.warpPointer(width/2, height/2);
+    r.confinePointer(true);
   }
   
-  public boolean isShowMap() {
-    if ((keyPressedMask & ACTION_SHOW_MAP) == ACTION_SHOW_MAP) {
+  public boolean getShowMap() {
+    if ((this.keyPressedMask & ACTION_SHOW_MAP) == ACTION_SHOW_MAP) {
       return true;
     }
     return false;
   }
   
-  public boolean isShoot() {
-    if ((keyPressedMask & ACTION_SHOOT) == ACTION_SHOOT) {
+  public boolean getFire() {
+    if ((this.keyPressedMask & ACTION_FIRE) == ACTION_FIRE) {
+      this.keyPressedMask &= ~ACTION_FIRE;
       return true;
     }
     return false;
   }
 
-  public float getRawAxisX() {
-    if ((keyPressedMask & ACTION_STRAFE_RIGHT) == ACTION_STRAFE_RIGHT) {
+  public float getAxisHorizontal() {
+    if ((this.keyPressedMask & ACTION_STRAFE_RIGHT) == ACTION_STRAFE_RIGHT) {
       return 1.0;
     }
-    if ((keyPressedMask & ACTION_STRAFE_LEFT) == ACTION_STRAFE_LEFT) {
+    if ((this.keyPressedMask & ACTION_STRAFE_LEFT) == ACTION_STRAFE_LEFT) {
       return -1.0;
     }
     return 0;
   }
-
-  public float getRawAxisY() {
-    if ((keyPressedMask & ACTION_FORWARD) == ACTION_FORWARD) {
+  
+  public float getAxisVertical() {
+    if ((this.keyPressedMask & ACTION_FORWARD) == ACTION_FORWARD) {
       return 1.0;
     }
-    if ((keyPressedMask & ACTION_BACKWARD) == ACTION_BACKWARD) {
+    if ((this.keyPressedMask & ACTION_BACKWARD) == ACTION_BACKWARD) {
       return -1.0;
     }
     return 0;
   }
+  
+  public float getAxisMouseX() {
 
-  public float getRawAxisPitch() {
-    if ((keyPressedMask & ACTION_UP) == ACTION_UP) {
-      return 1.0;
+    float delta = mouseX - width * 0.5;
+    if(abs(delta) < 2) {
+      return 0;
     }
-    if ((keyPressedMask & ACTION_DOWN) == ACTION_DOWN) {
-      return -1.0;
-    }
-    return 0;
+    
+    com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
+    win.warpPointer(int(width * 0.5 - delta * 0.1), mouseY);
+
+    return delta / abs(delta);
   }
 
-  public float getRawAxisYaw() {
-    if ((keyPressedMask & ACTION_TURN_RIGHT) == ACTION_TURN_RIGHT) {
-      return 1.0;
+  public float getAxisMouseY() {
+    
+    float delta = mouseY - height * 0.5;
+    if(abs(delta) < 2) {
+      return 0;
     }
-    if ((keyPressedMask & ACTION_TURN_LEFT) == ACTION_TURN_LEFT) {
-      return -1.0;
-    }
-    return 0;
+    
+    com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
+    win.warpPointer(mouseX, int(height * 0.5 - delta * 0.1));
+
+    return -delta / abs(delta);
   }
 }
 
@@ -79,11 +90,11 @@ void keyPressed() {
     } else if (keyCode == DOWN) {
       Input.keyPressedMask |= ACTION_BACKWARD;
     } else  if (keyCode == RIGHT) {
-      Input.keyPressedMask |= ACTION_TURN_RIGHT;
+      Input.keyPressedMask |= ACTION_STRAFE_RIGHT;
     } else  if (keyCode == LEFT) {
-      Input.keyPressedMask |= ACTION_TURN_LEFT;
+      Input.keyPressedMask |= ACTION_STRAFE_LEFT;
     } else  if (keyCode == CONTROL) {
-      Input.keyPressedMask |= ACTION_SHOOT;
+      Input.keyPressedMask |= ACTION_FIRE;
     }
   } else {
     if (key == 'w' || key == 'W') {
@@ -114,11 +125,9 @@ void keyReleased() {
     } else if (keyCode == DOWN) {
       Input.keyPressedMask &= ~ACTION_BACKWARD;
     } else if (keyCode == RIGHT) {
-      Input.keyPressedMask &= ~ACTION_TURN_RIGHT;
+      Input.keyPressedMask &= ~ACTION_STRAFE_RIGHT;
     } else if (keyCode == LEFT) {
-      Input.keyPressedMask &= ~ACTION_TURN_LEFT;
-    } else if (keyCode == CONTROL) {
-      Input.keyPressedMask &= ~ACTION_SHOOT;
+      Input.keyPressedMask &= ~ACTION_STRAFE_LEFT;
     }
   } else {
     if (key == 'w' || key == 'W') {
@@ -134,5 +143,11 @@ void keyReleased() {
     } else if (key == TAB) {
       Input.keyPressedMask &= ~ACTION_SHOW_MAP;
     }
+  }
+}
+
+void mouseClicked() {
+  if (mouseButton == LEFT) {
+    Input.keyPressedMask |= ACTION_FIRE;
   }
 }

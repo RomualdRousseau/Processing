@@ -30,7 +30,7 @@ class Main(Behavior):
 		# Generate a dungeon
 		
 		dungeon = DungeonBuilder(scene.applet)	\
-			.setNumberOfRooms(10)		\
+			.setNumberOfRooms(40)		\
 			.setRoomMinimumSize(4)	\
 			.setRoomMaximumSize(7)	\
 			.setMapSize(MAP_SIZE)		\
@@ -65,7 +65,7 @@ class Main(Behavior):
 		# Setup the camera
     
 		scene.camera.transform.location = PVector(0.5, 0.5, 1.5).add(dungeon.getStartRoom().position)
-		scene.camera.direction = PVector(1, 1, 0).normalize()
+		scene.camera.transform.rotation.z = PVector(1, 1, 0).heading()
 		scene.camera.behaviors.add(ScriptFactory.newInstance("Hero"))
 		
 		# Generate furnitures

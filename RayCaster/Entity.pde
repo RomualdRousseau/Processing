@@ -2,6 +2,12 @@ public class Transform
 {
   public PVector location = new PVector(0, 0, 1.5);
   public PVector rotation = new PVector(0, 0, 0);
+  
+  public PVector getDirection() {
+    PVector direction = PVector.fromAngle(this.rotation.z);
+    direction.z = sin(this.rotation.x);
+    return direction.normalize();
+  }
 }
 
 public abstract class Entity

@@ -16,11 +16,17 @@ private class HUD
     text(int(frameRate) + " fps", 0, 15);
     text("Life: " + getHeroLife(), 100, 15);
     text("Gold: " + getHeroGold(), 200, 15);
-
-    if (Input.isShowMap()) {
+    
+    stroke(0, 255, 0);
+    line(width/2 - 30, height/2, width/2 - 5, height/2);
+    line(width/2 + 5, height/2, width/2 + 30, height/2);
+    line(width/2, height/2 - 30, width/2, height/2 - 5);
+    line(width/2, height/2 + 5, width/2, height/2 + 30);
+    
+    if (Input.getShowMap()) {
 
       stroke(64, 64, 64, 128);
-      fill(64, 64, 64, 128);
+      fill(128, 128, 128, 128);
       for (int i = 0; i < Scene.map[1].length; i++) {
         for (int j = 0; j < Scene.map[1][i].length; j++) {
           if (Scene.map[1][i][j] == 0) {
@@ -59,7 +65,7 @@ private class HUD
       fill(0, 255, 0);
       pushMatrix();
       translate(Scene.camera.transform.location.x * w, Scene.camera.transform.location.y * h);
-      rotate(Scene.camera.direction.heading() + PI/2);
+      rotate(Scene.camera.transform.rotation.z + PI/2);
       triangle(0, -5, 2.5, 5, -2.5, 5);
       popMatrix();
     }

@@ -15,41 +15,27 @@ class Hero(Behavior):
 	def update(self, hero, dt):
 
 		gravityForce = PVector(0, 0, -9.81)
+
+		direction = PVector.fromAngle(hero.transform.rotation.z)
 		
-		moveSpeed = 200 * Input.getRawAxisY()
-		moveForce = hero.direction.copy().mult(moveSpeed)
+		moveSpeed = 200 * Input.getAxisVertical()
+		moveForce = direction.copy().mult(moveSpeed)
 		
-		strafeSpeed = 200 * Input.getRawAxisX()
-		strafeForce = hero.direction.cross(hero.up).mult(strafeSpeed)
-		
+		strafeSpeed = 200 * Input.getAxisHorizontal()
+		strafeForce = direction.cross(hero.up).mult(strafeSpeed)
+
+		pitchSpeed = 1 * Input.getAxisMouseY()
+		hero.transform.rotation.x += pitchSpeed * dt
+
+		yawSpeed = 2 * Input.getAxisMouseX()
+		hero.transform.rotation.z += yawSpeed * dt
+
 		hero.forces.mult(0)
 		hero.forces.add(gravityForce)
 		hero.forces.add(moveForce)
 		hero.forces.add(strafeForce)
-
-		pitchSpeed = Input.getRawAxisPitch()
-		c = cos(pitchSpeed * dt)
-		s = sin(pitchSpeed * dt)
-		rotationX = [
-			[ 1, 0,  0 ],
-			[ 0, c, -s ],
-			[ 0, s,  c ]
-		]
-		hero.direction = matmul(hero.direction, rotationX)
-
-		yawSpeed = 3 * Input.getRawAxisYaw()
-		c = cos(yawSpeed * dt)
-		s = sin(yawSpeed * dt)
-		rotationZ = [
-			[ c, -s, 0 ],
-			[ s,  c, 0 ],
-			[ 0,  0, 1 ]
-		]
-		hero.direction = matmul(hero.direction, rotationZ)
-
-		hero.transform.rotation.z = hero.direction.heading()
 		
-		if Input.isShoot():
+		if Input.getFire():
 			acquireTarget = hero.acquireNearestTarget(hero.parent.sprites, 0, 1, 0)
 			
 			if not acquireTarget is None:
