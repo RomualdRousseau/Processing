@@ -24,10 +24,10 @@ class Hero(Behavior):
 		strafeSpeed = 200 * Input.getAxisHorizontal()
 		strafeForce = direction.cross(hero.up).mult(strafeSpeed)
 
-		pitchSpeed = 1 * Input.getAxisMouseY()
+		pitchSpeed = 2 * Input.getAxisMouseY()
 		hero.transform.rotation.x += pitchSpeed * dt
 
-		yawSpeed = 2 * Input.getAxisMouseX()
+		yawSpeed = 5 * Input.getAxisMouseX()
 		hero.transform.rotation.z += yawSpeed * dt
 
 		hero.forces.mult(0)

@@ -59,12 +59,12 @@ public class _Input
   public float getAxisMouseX() {
 
     float delta = mouseX - width * 0.5;
-    if(abs(delta) < 2) {
+    if(abs(delta) < 5) {
       return 0;
     }
     
     com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
-    win.warpPointer(int(width * 0.5 - delta * 0.1), mouseY);
+    win.warpPointer(int(width * 0.5 - delta * 0.0001), mouseY);
 
     return delta / abs(delta);
   }
@@ -72,12 +72,12 @@ public class _Input
   public float getAxisMouseY() {
     
     float delta = mouseY - height * 0.5;
-    if(abs(delta) < 2) {
+    if(abs(delta) < 5) {
       return 0;
     }
     
     com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
-    win.warpPointer(mouseX, int(height * 0.5 - delta * 0.1));
+    win.warpPointer(mouseX, int(height * 0.5 - delta * 0.0001));
 
     return -delta / abs(delta);
   }
