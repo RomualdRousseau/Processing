@@ -1,4 +1,4 @@
-public class PGA2D_AlgebraClass implements GA2D.Algebra {
+public class PGA2DClass implements GA2D.Algebra {
 
 	public float[] rev(float[] a) {
 		float[] r = new float[8];
@@ -225,7 +225,7 @@ public class PGA2D_AlgebraClass implements GA2D.Algebra {
 		return r;
 	}
 
-	private final static String[] BASIS = { "1", "e0", "e1", "e2", "e01", "e02", "e12", "e012" };
+	private final static String[] BASIS = { "1", "e1", "e2", "e3", "e12", "e13", "e23", "e123" };
 	public String toString(float[] a) {
 		StringBuffer output = new StringBuffer();
 		boolean firstPass = true;

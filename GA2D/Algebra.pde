@@ -2,52 +2,81 @@ import java.net.*;
 import javax.tools.*;
 import java.nio.file.*;
 import java.nio.charset.*;
-import java.util.function.*;
+import java.util.*;
+
+public interface AlgebraGraphFunction
+{
+  GraphFunction apply(Algebra a);
+}
+
+public interface AlgebraInlineFunction
+{
+  void apply(Algebra a);
+}
 
 public interface Algebra
 {
-  float[] rev(float[] a);
+  default Graph graph(Graph graph, AlgebraGraphFunction inline) {
+    return graph.apply(inline.apply(this));
+  }
 
-  float[] conj(float[] a);
+  default void inline(AlgebraInlineFunction inline) {
+    inline.apply(this);
+  }
 
-  float[] dual(float[] a);
+  default float[] set(float... v) {
+    return v;
+  }
 
-  float[] add(float[] a, float b);
+  public abstract float[] rev(float[] a);
 
-  float[] add(float a, float[] b);
+  public abstract float[] conj(float[] a);
 
-  float[] add(float[] a, float[] b);
+  public abstract float[] dual(float[] a);
 
-  float[] sub(float[] a, float b);
+  public abstract float[] add(float[] a, float b);
 
-  float[] sub(float a, float[] b);
+  public abstract float[] add(float a, float[] b);
 
-  float[] sub(float[] a, float[] b);
+  public abstract float[] add(float[] a, float[] b);
 
-  float[] mul(float a, float[] b);
+  public abstract float[] sub(float[] a, float b);
 
-  float[] mul(float[] a, float b);
+  public abstract float[] sub(float a, float[] b);
 
-  float[] mul(float[] a, float[] b);
+  public abstract float[] sub(float[] a, float[] b);
 
-  float[] div(float a, float[] b);
+  public abstract float[] mul(float a, float[] b);
 
-  float[] div(float[] a, float b);
+  public abstract float[] mul(float[] a, float b);
 
-  float[] div(float[] a, float[] b);
+  public abstract float[] mul(float[] a, float[] b);
 
-  float[] dot(float[] a, float[] b);
+  public abstract float[] div(float a, float[] b);
 
-  float[] join(float[] a, float[] b);
+  public abstract float[] div(float[] a, float b);
 
-  float[] meet(float[] a, float[] b);
+  public abstract float[] div(float[] a, float[] b);
 
-  String toString(float[] a);
+  public abstract float[] dot(float[] a, float[] b);
+
+  public abstract float[] join(float[] a, float[] b);
+
+  public abstract float[] meet(float[] a, float[] b);
+
+  public abstract String toString(float[] a);
 }
 
-Consumer<Float> Algebra(String className, String[] basis, int[] grades, String[][] cayley, Function<Algebra, Consumer<Float>> inline) {
-  className += "_AlgebraClass"; // Avoid name collision
-  return inline.apply(compileAlgebra(className, generateAlgebra(className, basis, grades, cayley)));
+Algebra Algebra(String className, int p, int q, int r) {
+  className += "Class"; // Avoid name collision
+
+  String[] b = generateBasis(p + q + r);
+  int[] g = generateGrades(b);
+  int[] qf = generateQuadratricForm(p, q, r);
+  String[][] m = generateCayleyMatrix(qf, b);
+  String algebra = generateAlgebra(className, b, g, m);
+
+  return compileAlgebra(className, algebra);
 }
 
 String generateAlgebra(String className, String[] basis, int[] grades, String[][] cayley) {
@@ -71,7 +100,7 @@ String generateAlgebra(String className, String[] basis, int[] grades, String[][
 
 Algebra compileAlgebra(String className, String source) {
   try {
-   
+
     Path javaFile = Paths.get(dataPath(className + ".java"));
     Files.write(javaFile, source.getBytes(StandardCharsets.UTF_8));
 
@@ -255,7 +284,7 @@ void compile_join(StringBuffer source, String[] basis, String[][] cayley) {
   for (int i = 0; i < cayley.length; i++) {
     for (int j = 0; j < cayley[i].length; j++) {
 
-      if (!basis[i].equals("1") && !basis[j].equals("1") && is_axis_colineaire(basis[i], basis[j])) {
+      if (!basis[i].equals("1") && !basis[j].equals("1") && is_axis_colinear(basis[i], basis[j])) {
         continue;
       }
 
@@ -313,25 +342,17 @@ void compile_dot(StringBuffer source, String[] basis, String[][] cayley) {
         continue;
       }
 
-      float c = 1;
+      float sign = 1;
       if (symbol.startsWith("-")) {
         symbol = symbol.substring(1);
-        c *= -1;
+        sign *= -1;
       }
 
       int k = java.util.Arrays.asList(basis).indexOf(symbol);
-
       if (code[k] == null) {
-        code[k] = "r[" + k + "] = ";
-        if (c < 1) {
-          code[k] += "-";
-        }
+        code[k] = "r[" + k + "] = " + ((sign < 1) ? "-" : "");
       } else {
-        if (c < 1) {
-          code[k] += " - ";
-        } else {
-          code[k] += " + ";
-        }
+        code[k] += (sign < 1) ? " - " : " + ";
       }
       code[k] += "a[" + i + "] * b[" + j + "]";
     }
@@ -353,7 +374,7 @@ void compile_meet(StringBuffer source, String[] basis, String[][] cayley) {
   for (int i = 0; i < cayley.length; i++) {
     for (int j = 0; j < cayley[i].length; j++) {
 
-      if (!basis[i].equals("1") && !basis[j].equals("1") && is_axis_colineaire(basis[i], basis[j])) {
+      if (!basis[i].equals("1") && !basis[j].equals("1") && is_axis_colinear(basis[i], basis[j])) {
         continue;
       }
 
@@ -362,25 +383,17 @@ void compile_meet(StringBuffer source, String[] basis, String[][] cayley) {
         continue;
       }
 
-      float c = 1;
+      float sign = 1;
       if (symbol.startsWith("-")) {
         symbol = symbol.substring(1);
-        c *= -1;
+        sign *= -1;
       }
 
       int k = java.util.Arrays.asList(basis).indexOf(symbol);
-
       if (code[k] == null) {
-        code[k] = "r[" + (basis.length - k - 1) + "] = ";
-        if (c < 1) {
-          code[k] += "-";
-        }
+        code[k] = "r[" +  (basis.length - k - 1) + "] = " + ((sign < 1) ? "-" : "");
       } else {
-        if (c < 1) {
-          code[k] += " - ";
-        } else {
-          code[k] += " + ";
-        }
+        code[k] += (sign < 1) ? " - " : " + ";
       }
       code[k] += "a[" + (basis.length - i - 1) + "] * b[" + (basis.length - j - 1) + "]";
     }
@@ -428,60 +441,141 @@ void compile_toString(StringBuffer source, String[] basis) {
   source.append("\t").append("}").append("\n");
 }
 
-boolean is_axis_colineaire(String s1, String s2) {
+String[] generateBasis(int n) {
+  int k = floor(pow(2, n));
+  
+  String[] result = new String[k];
 
-  if (s1.startsWith("e")) {
-    s1 = s1.substring(1);
-  } else {
-    throw new RuntimeException("Syntax error in cayley expression:" + s1);
-  }
-  if (s2.startsWith("e")) {
-    s2 = s2.substring(1);
-  } else {
-    throw new RuntimeException("Syntax error in cayley expression:" + s2);
+  for (int i = 0; i < k; i++) {
+    result[i] = "";
+    for (int j = 0; j < n; j++) {
+      result[i] += (((i >> j) & 1) == 1) ? Integer.toString(j + 1) : "";
+    }
   }
 
-  if (s1.equals(s2)) {
+  Arrays.sort(result, 1, k, (a, b) -> Integer.parseInt(a) - Integer.parseInt(b));
+
+  result[0] = "1";
+  for (int i = 1; i < k; i++) {
+    result[i] = "e" + result[i];
+  }
+
+  return result;
+}
+
+int[] generateGrades(String[] basis) {
+  int[] result = new int[basis.length];
+
+  result[0]= 0;
+  for (int i = 1; i < basis.length; i++) {
+    result[i] = basis[i].length() - 1;
+  }
+
+  return result;
+}
+
+int[] generateQuadratricForm(int p, int q, int r) {
+  int[] result = new int[p + q + r];
+
+  for (int i = 0; i < r; i++) {
+    result[i] = 0;
+  }
+  for (int i = r; i < r + p; i++) {
+    result[i] = 1;
+  }
+  for (int i = r + p; i < r + p + q; i++) {
+    result[i] = -1;
+  }
+
+  return result;
+}
+
+String[][] generateCayleyMatrix(int[] quadraticForm, String[] basis) {
+  String[][] result = new String[basis.length][basis.length];
+
+  for (int i = 0; i < basis.length; i++) {
+    for (int j = 0; j < basis.length; j++) {
+      result[i][j] = basis[i].equals("1") ? basis[j] : basis[j].equals("1") ? basis[i] : simplify(basis[i], basis[j], quadraticForm);
+    }
+  }
+
+  return result;
+}
+
+String simplify(String a, String b, int[] quadraticForm) {
+  char[] cmps = (a.substring(1) + b.substring(1)).toCharArray();
+  int sign = 1;
+
+  for (int i = 0; i < cmps.length; i++) {
+    for (int j = i + 1; j < cmps.length; j++) {
+      if (cmps[i] > cmps[j]) {
+        char temp = cmps[i];
+        cmps[i] = cmps[j];
+        cmps[j] = temp;
+        sign *= -1;
+      }
+    }
+  }
+
+  for (int i = 1; i < cmps.length; i++) {
+    int x = cmps[i - 1] - '1';
+    int y = cmps[i] - '1';
+    if (x == y) {
+      if (quadraticForm[x] == 0) {
+        sign = 0;
+      } else if (quadraticForm[x] == -1) {
+        sign *= -1;
+      }
+      i++;
+    }
+  }
+
+  if (sign == 0) {
+    return "0";
+  } else {
+    String s = new String(cmps).replaceAll("(.)\\1", "");
+    return ((sign == 1) ? "" : "-") + (s.equals("") ? "1" : "e" + s);
+  }
+}
+
+boolean is_axis_colinear(String a, String b) {
+
+  a = a.substring(1);
+  b = b.substring(1);
+
+  if (a.equals(b)) {
     return true;
   }
 
   boolean found = false;
-  if (s1.length() < s2.length()) {
-    for (int i = 0; i < s1.length(); i++) {
-      found |= s2.indexOf(s1.charAt(i)) >= 0;
+  if (a.length() < b.length()) {
+    for (int i = 0; i < a.length(); i++) {
+      found |= b.indexOf(a.charAt(i)) >= 0;
     }
   } else {
-    for (int i = 0; i < s2.length(); i++) {
-      found |= s1.indexOf(s2.charAt(i)) >= 0;
+    for (int i = 0; i < b.length(); i++) {
+      found |= a.indexOf(b.charAt(i)) >= 0;
     }
   }
   return found;
 }
-boolean is_axis_orthogonal(String s1, String s2) {
+boolean is_axis_orthogonal(String a, String b) {
 
-  if (s1.startsWith("e")) {
-    s1 = s1.substring(1);
-  } else {
-    throw new RuntimeException("Syntax error in cayley expression:" + s1);
-  }
-  if (s2.startsWith("e")) {
-    s2 = s2.substring(1);
-  } else {
-    throw new RuntimeException("Syntax error in cayley expression:" + s2);
-  }
+  a = a.substring(1);
+  b = b.substring(1);
 
-  if (s1.equals(s2)) {
+  if (a.equals(b)) {
     return false;
   }
 
   boolean found = true;
-  if (s1.length() < s2.length()) {
-    for (int i = 0; i < s1.length(); i++) {
-      found &= s2.indexOf(s1.charAt(i)) >= 0;
+  if (a.length() < b.length()) {
+    for (int i = 0; i < a.length(); i++) {
+      found &= b.indexOf(a.charAt(i)) >= 0;
     }
   } else {
-    for (int i = 0; i < s2.length(); i++) {
-      found &= s1.indexOf(s2.charAt(i)) >= 0;
+    for (int i = 0; i < b.length(); i++) {
+      found &= a.indexOf(b.charAt(i)) >= 0;
     }
   }
   return !found;
