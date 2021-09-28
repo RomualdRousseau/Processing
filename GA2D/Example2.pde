@@ -4,10 +4,10 @@ float a = 0;
 
 AlgebraGraphFunction example2 = A -> {
 
-  final float[] S = { 1, 0, 0, 0, 0, 0, 0, 0 };
-  final float[] E0 = { 0, 1, 0, 0, 0, 0, 0, 0 };
-  final float[] E1 = { 0, 0, 1, 0, 0, 0, 0, 0 };
-  final float[] E2 = { 0, 0, 0, 1, 0, 0, 0, 0 };
+  final float[] S  = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  final float[] E0 = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  final float[] E1 = { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  final float[] E2 = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   final float[] E01 = A.join(E0, E1);
   final float[] E02 = A.join(E0, E2);
   final float[] E12 = A.join(E1, E2);
