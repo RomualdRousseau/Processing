@@ -63,6 +63,8 @@ public interface Algebra
   public abstract float[] join(float[] a, float[] b);
 
   public abstract float[] meet(float[] a, float[] b);
+  
+  public abstract float norm(float[] a);
 
   public abstract String toString(float[] a);
 }
@@ -93,6 +95,7 @@ String generateAlgebra(String className, String[] basis, int[] grades, String[][
   compile_dot(source, basis, cayley);
   compile_join(source, basis, cayley);
   compile_meet(source, basis, cayley);
+  compile_norm(source);
   compile_toString(source, basis);
   source.append("}");
   return source.toString();
@@ -406,6 +409,13 @@ void compile_meet(StringBuffer source, String[] basis, String[][] cayley) {
     source.append("\t\t").append(line).append(";\n");
   }
   source.append("\t\t").append("return r").append(";\n");
+  source.append("\t").append("}").append("\n");
+}
+
+void compile_norm(StringBuffer source) {
+  source.append("\n");
+  source.append("\t").append("public float norm(float[] a) {").append("\n");
+  source.append("\t\t").append("return (float) Math.sqrt(mul(a, conj(a))[0])").append(";\n");
   source.append("\t").append("}").append("\n");
 }
 

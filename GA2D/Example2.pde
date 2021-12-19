@@ -19,9 +19,9 @@ AlgebraGraphFunction example2 = A -> {
   
   final BiFunction<float[], Float, float[]> ROTOR = (p, a) -> A.add(A.mul(S, cos(a / 2)), A.mul(p, sin(a / 2)));
   
-  final BiFunction<float[], Float, float[]> TRANSLATION = (p, l) -> A.add(S, A.mul(E02, l / 2));
+  final Function<Float, float[]> TRANSLATION = (l) -> A.add(S, A.mul(E02, l / 2));
   
-  final BiFunction<float[], Float, BiFunction<float[], Float, float[]>> MOTOR = (p, l) -> ROTOR.andThen(x -> A.mul(x, TRANSLATION.apply(p, l)));
+  final Function<Float, BiFunction<float[], Float, float[]>> MOTOR = (l) -> ROTOR.andThen(x -> A.mul(x, TRANSLATION.apply(l)));
 
   final BiFunction<float[], float[], float[]> TRANSFORM = (p, m) -> A.mul(A.mul(m, p), A.rev(m));
   
@@ -32,15 +32,15 @@ AlgebraGraphFunction example2 = A -> {
     float[] P2 = POINT.apply(2.0, 2.0);
     g.point(P2, "P2", false);
 
-    float[] M1 = MOTOR.apply(P1, 2.0).apply(P1, a);
+    float[] M1 = MOTOR.apply(2.0).apply(P1, a);
     float[] P3 = TRANSFORM.apply(P1, M1);
     g.point(P3, "P3", false);
 
-    float[] M2 = MOTOR.apply(P3, 1.0).apply(P3, a * 2);
+    float[] M2 = MOTOR.apply(1.0).apply(P3, a * 2);
     float[] P4 = TRANSFORM.apply(P3, M2);
     g.point(P4, "P4", false);
     
-    float[] M3 = MOTOR.apply(P4, 0.5).apply(P4, a * 4);
+    float[] M3 = MOTOR.apply(0.5).apply(P4, a * 4);
     float[] P5 = TRANSFORM.apply(P4, M3);
     g.point(P5, "P5", false);
     
@@ -49,7 +49,7 @@ AlgebraGraphFunction example2 = A -> {
     g.segment(P3, P1, "");
     g.segment(P4, P3, "");
     g.segment(P5, P4, "");
-
+    
     a += dt;
   };
 };

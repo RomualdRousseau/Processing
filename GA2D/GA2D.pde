@@ -3,11 +3,13 @@ Graph graph;
 void setup() {
   size(800, 800);
 
-  //graph = Algebra("PGA2D", 2, 0, 1).graph(new Graph2D(this), example1);
+  graph = Algebra("PGA2D", 2, 0, 1).graph(new Graph2D(this), example1);
 
-  graph = Algebra("PGA2D", 2, 0, 1).graph(new Graph2D(this), example2);
+  //graph = Algebra("PGA2D", 2, 0, 1).graph(new Graph2D(this), example2);
   
   //graph = Algebra("Complex", 0, 1, 0).graph(new Graph2D(this), example3);
+  
+  //graph = Algebra("Complex", 0, 1, 0).graph(new Graph2D(this), example4);
 }
 
 void draw() {

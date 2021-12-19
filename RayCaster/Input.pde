@@ -13,12 +13,21 @@ final int ACTION_SHOW_MAP        = (1 << 10);
 public class _Input
 {
   private int keyPressedMask = 0;
-
+  private boolean needMouseWarp = false;
+  
   public void init() {
     com.jogamp.newt.opengl.GLWindow r= (com.jogamp.newt.opengl.GLWindow) surface.getNative();
     r.setPointerVisible(false);
     r.warpPointer(width/2, height/2);
     r.confinePointer(true);
+  }
+  
+  public void update() {
+    if (needMouseWarp) {
+      com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
+      win.warpPointer(int(width * 0.5), int(height * 0.5));
+      needMouseWarp = false;
+    }
   }
   
   public boolean getShowMap() {
@@ -59,27 +68,25 @@ public class _Input
   public float getAxisMouseX() {
 
     float delta = mouseX - width * 0.5;
-    if(abs(delta) < 5) {
+    if(abs(delta) < 2) {
       return 0;
     }
     
-    com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
-    win.warpPointer(int(width * 0.5 - delta * 0.0001), mouseY);
+    needMouseWarp = true;
 
-    return delta / abs(delta);
+    return 0.1 * delta;
   }
 
   public float getAxisMouseY() {
     
     float delta = mouseY - height * 0.5;
-    if(abs(delta) < 5) {
+    if(abs(delta) < 2) {
       return 0;
     }
     
-    com.jogamp.newt.opengl.GLWindow win = (com.jogamp.newt.opengl.GLWindow) surface.getNative();
-    win.warpPointer(mouseX, int(height * 0.5 - delta * 0.0001));
+    needMouseWarp = true;
 
-    return -delta / abs(delta);
+    return -0.1 * delta;
   }
 }
 

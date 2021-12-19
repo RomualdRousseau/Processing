@@ -27,7 +27,7 @@ class Hero(Behavior):
 		pitchSpeed = 2 * Input.getAxisMouseY()
 		hero.transform.rotation.x += pitchSpeed * dt
 
-		yawSpeed = 5 * Input.getAxisMouseX()
+		yawSpeed = Input.getAxisMouseX()
 		hero.transform.rotation.z += yawSpeed * dt
 
 		hero.forces.mult(0)

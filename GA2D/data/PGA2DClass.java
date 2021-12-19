@@ -225,6 +225,10 @@ public class PGA2DClass implements GA2D.Algebra {
 		return r;
 	}
 
+	public float norm(float[] a) {
+		return (float) Math.sqrt(mul(a, conj(a))[0]);
+	}
+
 	private final static String[] BASIS = { "1", "e1", "e2", "e3", "e12", "e13", "e23", "e123" };
 	public String toString(float[] a) {
 		StringBuffer output = new StringBuffer();

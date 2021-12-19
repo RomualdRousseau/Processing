@@ -123,6 +123,10 @@ public class ComplexClass implements GA2D.Algebra {
 		return r;
 	}
 
+	public float norm(float[] a) {
+		return (float) Math.sqrt(mul(a, conj(a))[0]);
+	}
+
 	private final static String[] BASIS = { "1", "e1" };
 	public String toString(float[] a) {
 		StringBuffer output = new StringBuffer();

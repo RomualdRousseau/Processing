@@ -22,6 +22,14 @@ void setup() {
 
 void draw() {
   Scene.update(1.0 / max(30, frameRate));
+  Input.update();
   Scene.draw();
   hud.draw();
+  
+  //pushMatrix();
+  //translate(width / 2, height / 2, 50); 
+  //rotateY(0.5);
+  //noFill();
+  //box(40);
+  //popMatrix();
 }
