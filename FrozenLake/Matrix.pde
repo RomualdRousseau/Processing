@@ -278,15 +278,15 @@ class Matrix {
       }
       avg /= (float) this.rows;
       
-      float var = 0.0;
+      float var_ = 0.0;
       for (int i = 0; i < this.rows; i++) {
         float x = (this.data[i][j] - avg);
-        var += x * x;
+        var_ += x * x;
       }
-      var /= (float) this.rows;
+      var_ /= (float) this.rows;
       
       for (int i = 0; i < this.rows; i++) {
-        float x = (this.data[i][j] - avg) / sqrt(var + EPSILON);
+        float x = (this.data[i][j] - avg) / sqrt(var_ + EPSILON);
         this.data[i][j] = a * x + b;
       }
     }
