@@ -5,7 +5,6 @@ public static _Scene          Scene;
 HUD hud = new HUD();
 
 void setup() {
-  //size(640, 400);
   size(800, 600, P3D);
   //fullScreen(P3D);
   frameRate(60);
