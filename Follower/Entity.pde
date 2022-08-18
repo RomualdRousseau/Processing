@@ -58,8 +58,8 @@ class Entity {
     
     // Euler integration
   
-    speed.add(PVector.mult(acceleration, dt)).limit(maxSpeed);
     position.add(PVector.mult(speed, dt));
+    speed.add(PVector.mult(acceleration, dt)).limit(maxSpeed);
     
     // Cleanup for next update
     
